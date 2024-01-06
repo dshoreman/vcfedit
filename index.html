@@ -8,8 +8,18 @@
     </head>
     <body>
         <h1>vCard Editor</h1>
-        <input type="file" accept="text/vcard" onchange="openFile(event)" />
-        <pre id="vcard"></pre>
+
+        <button id="extracard">Add vCard File</button>
+
+        <div id="vcards"></div>
+
+        <template id="vcard-column">
+            <div class="vcard">
+                <input type="file" accept="text/vcard" onchange="openFile(event)">
+                <pre></pre>
+            </div>
+        </template>
+
         <script src="app.js"></script>
     </body>
 </html>
