@@ -48,7 +48,7 @@ export default class Contact {
     }
 
     #parseLines() {
-        for (const line of this.rawData.split(/[\r\n]+/)) {
+        for (const line of this.rawData.split('\r\n')) {
             switch (true) {
                 case line.startsWith('N:'):
                     this.#extractName(line);
@@ -67,8 +67,9 @@ export default class Contact {
                     break;
                 case /^(BEGIN|END):VCARD$/.test(line):
                 case /VERSION:[0-9\.]+/.test(line):
+                case /^(\s.*)?$/.test(line):
                     break; // no-op
-                default: console.warn("Unhandled VCF line: " + line);
+                default: console.warn(`Unhandled VCF line: '${line}'`);
             }
         }
     }
