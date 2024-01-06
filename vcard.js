@@ -1,4 +1,8 @@
+import Contact from "./contact.js";
+
 export default class VCard {
+    #cardRegex = /BEGIN:VCARD([\w\W]*?)END:VCARD/g;
+
     constructor(filename, parentColumn) {
         this.filename = filename;
         this.column = parentColumn;
@@ -6,6 +10,11 @@ export default class VCard {
 
     process(vcfData) {
         this.column.querySelector('h2').innerText = this.filename;
-        this.column.querySelector('pre').innerText = vcfData;
+
+        for (const vCard of vcfData.matchAll(this.#cardRegex)) {
+            const contact = new Contact(vCard[0]);
+
+            this.column.append(contact.vCard());
+        }
     }
 }
