@@ -14,15 +14,17 @@ const addCardColumn = () => {
 };
 
 const openFile = function(event) {
-    const reader = new FileReader();
+    const file = event.target.files[0],
+        reader = new FileReader();
 
     reader.onload = () => {
         const column = event.target.parentNode;
 
+        column.querySelector('h2').innerText = file.name;
         column.querySelector('pre').innerText = reader.result;
     };
 
-    reader.readAsText(event.target.files[0]);
+    reader.readAsText(file);
 }
 
 document.getElementById('extracard').onclick = addCardColumn;
