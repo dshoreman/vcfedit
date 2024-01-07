@@ -74,8 +74,16 @@ li.contact > p {
 .contact-header {
     background-color: #3a4f4d;
     color: #f5efe9;
+    height: 40px;
     padding: 8px;
 }
 .contact-header h3 {
     margin: 0;
+}
+.contact-header img {
+    border-radius: 4px;
+    float: left;
+    height: 40px;
+    margin-right: 8px;
+    width: 40px;
 }

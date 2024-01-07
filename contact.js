@@ -11,12 +11,43 @@ export default class Contact {
         const clone = this.template.cloneNode(true);
 
         clone.querySelector('h3').innerText = this.fullName;
+        clone.querySelector('img').src = this.photo;
         clone.querySelector('em').innerText = this.phone || '';
         clone.querySelector('span').innerText = this.email || '';
         clone.querySelector('p').innerText = this.organisation || '';
         clone.toString = () => this.rawData;
 
         return clone;
+    }
+
+    #parseLines() {
+        // Split continuous lines on CRLF followed by space or tab.
+        // Section 3.2 of RFC 6350: "Line Delimiting and Folding".
+        const unfolded = this.rawData.replace(/\r\n[\t\u0020]/g, '');
+
+        for (const line of unfolded.split('\r\n')) {
+            const [param, value] = line.split(':', 2);
+
+            if ('' === line.trim() || ['BEGIN', 'END', 'VERSION'].includes(param)) {
+                continue;
+            }
+
+            switch(param.split(';')[0]) {
+                case 'N': this.#extractName(line); break;
+                case 'FN': this.#extractFullName(line); break;
+                case 'TEL': this.#extractPhone(line); break;
+                case 'EMAIL': this.#extractEmail(line); break;
+                case 'ORG': this.#extractOrganisation(line); break;
+                case 'PHOTO':
+                    // Todo: Move this to `#extractPhoto` and improve parsing
+                    if (param === 'PHOTO;ENCODING=BASE64;JPEG') {
+                        this.#extractBase64Photo(value);
+                        break;
+                    }
+                default:
+                    console.warn(`Unhandled VCF line: '${line}'`);
+            }
+        }
     }
 
     #extractEmail(line) {
@@ -47,30 +78,7 @@ export default class Contact {
         this.phone = line.replace('TEL;CELL:', '');
     }
 
-    #parseLines() {
-        for (const line of this.rawData.split('\r\n')) {
-            switch (true) {
-                case line.startsWith('N:'):
-                    this.#extractName(line);
-                    break;
-                case line.startsWith('FN:'):
-                    this.#extractFullName(line);
-                    break;
-                case line.startsWith('TEL;CELL:'):
-                    this.#extractPhone(line);
-                    break;
-                case line.startsWith('EMAIL:'):
-                    this.#extractEmail(line);
-                    break;
-                case line.startsWith('ORG:'):
-                    this.#extractOrganisation(line);
-                    break;
-                case /^(BEGIN|END):VCARD$/.test(line):
-                case /VERSION:[0-9\.]+/.test(line):
-                case /^(\s.*)?$/.test(line):
-                    break; // no-op
-                default: console.warn(`Unhandled VCF line: '${line}'`);
-            }
-        }
+    #extractBase64Photo(data) {
+        this.photo = `data:image/jpg;base64,${data}`;
     }
 };
