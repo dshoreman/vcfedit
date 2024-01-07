@@ -14,7 +14,7 @@ export default class VCard {
         for (const vCard of vcfData.matchAll(this.#cardRegex)) {
             const contact = new Contact(vCard[0]);
 
-            this.column.append(contact.vCard());
+            this.column.querySelector('.contacts').append(contact.vCard());
         }
     }
 }

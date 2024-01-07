@@ -10,10 +10,10 @@ export default class Contact {
     vCard() {
         const clone = this.template.cloneNode(true);
 
-        clone.querySelector('b').innerText = this.fullName;
+        clone.querySelector('h3').innerText = this.fullName;
         clone.querySelector('em').innerText = this.phone || '';
         clone.querySelector('span').innerText = this.email || '';
-        clone.querySelector('sup').innerText = this.organisation || '';
+        clone.querySelector('p').innerText = this.organisation || '';
         clone.toString = () => this.rawData;
 
         return clone;

@@ -1,6 +1,81 @@
+html { height: 100%; }
+body {
+    background-color: #18282b;
+    color: #f5efe9;
+    font-family: 'Play', sans-serif;
+    height: calc(100% - 16px);
+    margin: 0;
+    padding: 8px;
+}
+button#extracard {
+    position: absolute;
+    top: 2vh;
+    right: 3vw;
+}
+h1 {
+    font-family: 'Salsa', cursive;
+    margin: 0 0 0.3em;
+    padding: 0 0.5em;
+}
 #vcards {
+    background-color: #677D76;
+    color: #f5efe9;
     display: flex;
+    height: calc(100% - 85px);
+    overflow: auto;
+    padding: 20px 10px;
+}
+.vcard {
+    background-color: #18282B;
+    border-radius: 2px;
+    box-shadow: rgba(0, 0, 0, 0.36) 0px 2px 4px 0px inset;
+    margin: 0 20px;
+    min-width: 20rem;
+    padding: 0 1px 8px;
+    width: 20rem;
+}
+.vcard h2, .vcard input {
+    padding: 0 8px;
+}
+.vcard h2 {
+    height: 25px;
+    margin: 8px 0;
 }
 .vcard input {
     display: none;
+}
+ul.contacts {
+    background-color: #f5efe9;
+    height: calc(100% - 50px);
+    margin: 0;
+    overflow: auto;
+    padding: 0.5rem;
+}
+ul.contacts::-webkit-scrollbar {
+    width: 0;
+}
+li.contact {
+    background-color: #becdc4;
+    border: 1px solid;
+    border-radius: 4px;
+    color: #18282b;
+    color: #677d76;
+    list-style: none;
+    margin: 0 0 1vw;
+    overflow: auto;
+    padding: 0 0 1vh;
+}
+li.contact > *:not(.contact-header):not(:empty) {
+    padding: 6px 6px 0;
+}
+li.contact > p {
+    margin: 0;
+}
+.contact-header {
+    background-color: #3a4f4d;
+    color: #f5efe9;
+    padding: 8px;
+}
+.contact-header h3 {
+    margin: 0;
 }
