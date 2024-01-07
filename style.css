@@ -1,3 +1,6 @@
 #vcards {
     display: flex;
 }
+.vcard input {
+    display: none;
+}

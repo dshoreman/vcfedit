@@ -8,11 +8,15 @@ export default class CardBoard {
     addCardColumn() {
         const clone = this.template.cloneNode(true);
 
-        clone.querySelector('input').onchange = this.loadVCardFile;
-
         this.cardCount += 1;
+
+        clone.querySelector('input').onchange = this.loadVCardFile;
+        clone.querySelector('.vcard').id = `vcard-${this.cardCount}`;
+
         this.cardBoard.style.columnCount = this.cardCount;
         this.cardBoard.append(clone);
+
+        document.querySelector(`#vcard-${this.cardCount} input`).click();
     }
 
     loadVCardFile(event) {
