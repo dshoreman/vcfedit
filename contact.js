@@ -13,7 +13,7 @@ export default class Contact {
         clone.querySelector('h3').innerText = this.fullName;
         clone.querySelector('img').src = this.photo;
         clone.querySelector('em').innerText = this.phone || '';
-        clone.querySelector('span').innerText = this.email || '';
+        clone.querySelector('span').innerText = this.email?.address || '';
         clone.querySelector('p').innerText = this.organisation || '';
         clone.toString = () => this.rawData;
 
@@ -36,7 +36,7 @@ export default class Contact {
                 case 'N': this.#extractName(line); break;
                 case 'FN': this.#extractFullName(line); break;
                 case 'TEL': this.#extractPhone(line); break;
-                case 'EMAIL': this.#extractEmail(line); break;
+                case 'EMAIL': this.#extractEmail(param, value); break;
                 case 'ORG': this.#extractOrganisation(line); break;
                 case 'PHOTO':
                     // Todo: Move this to `#extractPhoto` and improve parsing
@@ -46,12 +46,30 @@ export default class Contact {
                     }
                 default:
                     console.warn(`Unhandled VCF line: '${line}'`);
+                    this.hasInvalidLines = true;
             }
         }
     }
 
-    #extractEmail(line) {
-        this.email = line.replace('EMAIL:', '');
+    #extractEmail(param, value) {
+        const email = { address: value, isPreferred: false, type: '' }
+        let args = param.substring(6).split(';');
+
+        if (args.includes('PREF')) {
+            args.splice(args.indexOf('PREF'), 1);
+            email.isPreferred = true;
+        }
+
+        if (1 === args.length) {
+            email.type = args[0];
+            args.splice(0, 1);
+        }
+
+        if (args.length) {
+            console.warn(`Email has unexpected args:\n ${param}:${value}`);
+        }
+
+        this.email = email;
     }
 
     #extractFullName(line) {
