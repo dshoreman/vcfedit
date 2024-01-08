@@ -81,10 +81,14 @@ export default class Contact {
     }
 
     #extractName(line) {
-        const [_, last, first] = line.match(/N:(.*)?;(.*)?;;;/);
+        const [_, last, first, middle, prefix, suffix] =
+            line.match(/N:(.*)?;(.*)?;(.*)?;(.*)?;(.*)?/);
 
+        this.namePrefix = prefix || '';
         this.firstName = first || '';
+        this.middleNames = middle || '';
         this.lastName = last || '';
+        this.nameSuffix = suffix || '';
         this.nameRaw = line.substring(2);
     }
 
