@@ -1,4 +1,5 @@
 export default class Contact {
+    #defaultPhoto = 'avatar.png';
     template = document.querySelector('#vcard-contact').content;
 
     constructor(rawData) {
@@ -11,7 +12,7 @@ export default class Contact {
         const clone = this.template.cloneNode(true);
 
         clone.querySelector('h3').innerText = this.fullName;
-        clone.querySelector('img').src = this.photo;
+        clone.querySelector('img').src = this.photo || this.#defaultPhoto;
         clone.querySelector('em').innerText = this.phone || '';
         clone.querySelector('span').innerText = this.email?.address || '';
         clone.querySelector('p').innerText = this.organisation || '';
