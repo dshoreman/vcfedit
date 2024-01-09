@@ -1,3 +1,27 @@
+class ContactDetail {
+    template = document.querySelector('#vcard-contact-detail').content;
+
+    constructor(contactClone) {
+        this.vcard = contactClone;
+    }
+
+    add(items) {
+        for (const item of items) {
+            const elements = this.#makeNodes(item);
+
+            this.vcard.querySelector('ul').append(elements);
+        }
+    }
+
+    #makeNodes(item) {
+        const clone = this.template.cloneNode(true);
+
+        clone.querySelector('.contact-detail-title').innerText = item.type;
+        clone.querySelector('.contact-detail-value').innerText = item.value;
+
+        return clone;
+    }
+}
 export default class Contact {
     #defaultPhoto = 'avatar.png';
     emails = [];
@@ -11,7 +35,8 @@ export default class Contact {
     }
 
     vCard() {
-        const clone = this.template.cloneNode(true);
+        const clone = this.template.cloneNode(true),
+            sections = new ContactDetail(clone);
         let organisation = this.organisation || '';
 
         if (organisation && this.title) {
@@ -19,11 +44,12 @@ export default class Contact {
         }
 
         clone.querySelector('h3').innerText = this.fullName || this.emails[0]?.value || 'Unknown';
+        clone.querySelector('em').innerText = organisation || this.title || '';
         clone.querySelector('img').src = this.photo || this.#defaultPhoto;
-        clone.querySelector('em').innerText = this.phoneNumbers[0]?.value || '';
-        clone.querySelector('span').innerText = this.emails[0]?.value || '';
-        clone.querySelector('p').innerText = organisation || this.title || '';
         clone.toString = () => this.rawData;
+
+        this.phoneNumbers.length && sections.add(this.phoneNumbers);
+        this.emails.length && sections.add(this.emails);
 
         return clone;
     }
