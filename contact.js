@@ -1,5 +1,7 @@
 export default class Contact {
     #defaultPhoto = 'avatar.png';
+    emails = [];
+    phoneNumbers = [];
     template = document.querySelector('#vcard-contact').content;
 
     constructor(rawData) {
@@ -18,8 +20,8 @@ export default class Contact {
 
         clone.querySelector('h3').innerText = this.fullName;
         clone.querySelector('img').src = this.photo || this.#defaultPhoto;
-        clone.querySelector('em').innerText = this.phone || '';
-        clone.querySelector('span').innerText = this.email?.address || '';
+        clone.querySelector('em').innerText = this.phoneNumbers[0]?.value || '';
+        clone.querySelector('span').innerText = this.emails[0]?.value || '';
         clone.querySelector('p').innerText = organisation || this.title || '';
         clone.toString = () => this.rawData;
 
@@ -38,11 +40,13 @@ export default class Contact {
                 continue;
             }
 
-            switch(param.split(';')[0]) {
+            let [field, args] = this.#parseArgsFromParam(param);
+
+            switch(field) {
                 case 'N': this.#extractName(line); break;
                 case 'FN': this.#extractFullName(line); break;
-                case 'TEL': this.#extractPhone(line); break;
-                case 'EMAIL': this.#extractEmail(param, value); break;
+                case 'TEL': this.#extractPhone(value, args); break;
+                case 'EMAIL': this.#extractEmail(value, args); break;
                 case 'ORG': this.#extractOrganisation(line); break;
                 case 'TITLE': this.#extractJobTitle(value); break;
                 case 'PHOTO':
@@ -58,25 +62,44 @@ export default class Contact {
         }
     }
 
-    #extractEmail(param, value) {
-        const email = { address: value, isPreferred: false, type: '' }
-        let args = param.substring(6).split(';');
+    #parseArgsFromParam(param) {
+        const [field, ...args] = param.split(';');
 
-        if (args.includes('PREF')) {
-            args.splice(args.indexOf('PREF'), 1);
-            email.isPreferred = true;
+        const transformed = args.map((arg) => {
+            let [name, value] = arg.split('=', 2);
+
+            if (!value && 'PREF' !== name) {
+                [name, value] = [value, name];
+            }
+
+            return {name, value};
+        });
+
+        return [field, transformed];
+    }
+
+    #processFlagsFromFieldOptions(options, value) {
+        const field = {isPreferred: false, type: '', value};
+
+        for (const flag of options) {
+            if ('PREF' === flag.name) {
+                field.isPreferred = true;
+                continue;
+            }
+            if (!flag.name || 'TYPE' === flag.name) {
+                field.type = flag.value;
+                continue;
+            }
+            console.warn(`Unhandled option for ${value}:`, flag);
         }
 
-        if (1 === args.length) {
-            email.type = args[0];
-            args.splice(0, 1);
-        }
+        return field;
+    }
 
-        if (args.length) {
-            console.warn(`Email has unexpected args:\n ${param}:${value}`);
-        }
-
-        this.email = email;
+    #extractEmail(email, options) {
+        this.emails.push(
+            this.#processFlagsFromFieldOptions(options, email)
+        );
     }
 
     #extractFullName(line) {
@@ -114,8 +137,10 @@ export default class Contact {
         this.title = value;
     }
 
-    #extractPhone(line) {
-        this.phone = line.replace('TEL;CELL:', '');
+    #extractPhone(number, options) {
+        this.phoneNumbers.push(
+            this.#processFlagsFromFieldOptions(options, number)
+        );
     }
 
     #extractBase64Photo(data) {
