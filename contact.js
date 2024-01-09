@@ -18,7 +18,7 @@ export default class Contact {
             organisation = `${this.title}, ${organisation}`
         }
 
-        clone.querySelector('h3').innerText = this.fullName;
+        clone.querySelector('h3').innerText = this.fullName || this.emails[0]?.value || 'Unknown';
         clone.querySelector('img').src = this.photo || this.#defaultPhoto;
         clone.querySelector('em').innerText = this.phoneNumbers[0]?.value || '';
         clone.querySelector('span').innerText = this.emails[0]?.value || '';
