@@ -82,7 +82,7 @@ export default class Contact {
     #extractFullName(line) {
         this.fullName = line.replace('FN:', '');
 
-        if (this.fullName !== `${this.firstName} ${this.lastName}`.trim()) {
+        if (this.fullName !== this.nameComputed) {
             this.fullName += ` (${this.firstName} ${this.lastName})`;
         }
     }
@@ -91,12 +91,20 @@ export default class Contact {
         const [_, last, first, middle, prefix, suffix] =
             line.match(/N:(.*)?;(.*)?;(.*)?;(.*)?;(.*)?/);
 
+        let parts = [];
+
+        for (const part of [prefix, first, middle, last, suffix]) {
+            part && parts.push(part);
+        }
+
+        this.nameComputed = parts.join(' ');
+        this.nameRaw = line.substring(2);
+
         this.namePrefix = prefix || '';
         this.firstName = first || '';
         this.middleNames = middle || '';
         this.lastName = last || '';
         this.nameSuffix = suffix || '';
-        this.nameRaw = line.substring(2);
     }
 
     #extractOrganisation(line) {
