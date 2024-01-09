@@ -10,12 +10,17 @@ export default class Contact {
 
     vCard() {
         const clone = this.template.cloneNode(true);
+        let organisation = this.organisation || '';
+
+        if (organisation && this.title) {
+            organisation = `${this.title}, ${organisation}`
+        }
 
         clone.querySelector('h3').innerText = this.fullName;
         clone.querySelector('img').src = this.photo || this.#defaultPhoto;
         clone.querySelector('em').innerText = this.phone || '';
         clone.querySelector('span').innerText = this.email?.address || '';
-        clone.querySelector('p').innerText = this.organisation || '';
+        clone.querySelector('p').innerText = organisation || this.title || '';
         clone.toString = () => this.rawData;
 
         return clone;
@@ -39,6 +44,7 @@ export default class Contact {
                 case 'TEL': this.#extractPhone(line); break;
                 case 'EMAIL': this.#extractEmail(param, value); break;
                 case 'ORG': this.#extractOrganisation(line); break;
+                case 'TITLE': this.#extractJobTitle(value); break;
                 case 'PHOTO':
                     // Todo: Move this to `#extractPhoto` and improve parsing
                     if (param === 'PHOTO;ENCODING=BASE64;JPEG') {
@@ -95,6 +101,9 @@ export default class Contact {
 
     #extractOrganisation(line) {
         this.organisation = line.substring(4);
+    }
+    #extractJobTitle(value) {
+        this.title = value;
     }
 
     #extractPhone(line) {
