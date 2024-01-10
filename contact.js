@@ -62,7 +62,7 @@ export default class Contact {
         const unfolded = this.rawData.replace(/\r\n[\t\u0020]/g, '');
 
         for (const line of unfolded.split('\r\n')) {
-            const [param, value] = line.split(':', 2);
+            const [param, value] = line.split(/:(.*)/);
 
             if ('' === line.trim() || ['BEGIN', 'END', 'VERSION'].includes(param)) {
                 continue;
@@ -164,7 +164,7 @@ export default class Contact {
     #extractName(value, args = []) {
         const [_, last, first, middle, prefix, suffix] = value.match(/(.*)?;(.*)?;(.*)?;(.*)?;(.*)?/),
             parts = [prefix, first, middle, last, suffix].filter(v => v).map(
-                part => this.#maybeDecode(part, args)
+                part => this.#maybeDecode(part.trim(), args)
             );
 
         this.nameComputed = parts.join(' ');
