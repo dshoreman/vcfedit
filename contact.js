@@ -1,3 +1,5 @@
+const decoder = new TextDecoder();
+
 class ContactDetail {
     template = document.querySelector('#vcard-contact-detail').content;
 
@@ -69,8 +71,8 @@ export default class Contact {
             let [field, args] = this.#parseArgsFromParam(param);
 
             switch(field) {
-                case 'N': this.#extractName(line); break;
-                case 'FN': this.#extractFullName(line); break;
+                case 'N': this.#extractName(value, args); break;
+                case 'FN': this.#extractFullName(value, args); break;
                 case 'TEL': this.#extractPhone(value, args); break;
                 case 'EMAIL': this.#extractEmail(value, args); break;
                 case 'ORG': this.#extractOrganisation(line); break;
@@ -122,32 +124,51 @@ export default class Contact {
         return field;
     }
 
+    #maybeDecode(value, args = []) {
+        const argsObject = {};
+
+        for (const {name, value} of args) {
+            argsObject[name] = value;
+        }
+
+        if (!Object.hasOwn(argsObject, 'ENCODING')) {
+            return value;
+        }
+
+        if ('QUOTED-PRINTABLE' === argsObject.ENCODING) {
+            const bytes = [...value.matchAll(/=([A-F0-9]{2})/gi)].map(hex => parseInt(hex[1], 16));
+
+            return decoder.decode(new Uint8Array(bytes));
+        }
+
+        console.warn(`Unhandled content encoding '${args.ENCODING}' for value '${value}'`);
+    }
+
     #extractEmail(email, options) {
         this.emails.push(
             this.#processFlagsFromFieldOptions(options, email)
         );
     }
 
-    #extractFullName(line) {
-        this.fullName = line.replace('FN:', '');
+    #extractFullName(value, args = []) {
 
-        if (this.fullName !== this.nameComputed) {
-            this.fullName += ` (${this.firstName} ${this.lastName})`;
+        value = this.#maybeDecode(value, args);
+
+        if (value !== this.nameComputed) {
+            value += ` (${this.firstName} ${this.lastName})`;
         }
+
+        this.fullName = value;
     }
 
-    #extractName(line) {
-        const [_, last, first, middle, prefix, suffix] =
-            line.match(/N:(.*)?;(.*)?;(.*)?;(.*)?;(.*)?/);
-
-        let parts = [];
-
-        for (const part of [prefix, first, middle, last, suffix]) {
-            part && parts.push(part);
-        }
+    #extractName(value, args = []) {
+        const [_, last, first, middle, prefix, suffix] = value.match(/(.*)?;(.*)?;(.*)?;(.*)?;(.*)?/),
+            parts = [prefix, first, middle, last, suffix].filter(v => v).map(
+                part => this.#maybeDecode(part, args)
+            );
 
         this.nameComputed = parts.join(' ');
-        this.nameRaw = line.substring(2);
+        this.nameRaw = value;
 
         this.namePrefix = prefix || '';
         this.firstName = first || '';
