@@ -25,7 +25,7 @@ class ContactDetail {
     }
 }
 export default class Contact {
-    #defaultPhoto = 'avatar.png';
+    #defaultPhoto = 'images/avatar.png';
     addresses = [];
     emails = [];
     phoneNumbers = [];
