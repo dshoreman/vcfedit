@@ -10,13 +10,18 @@ export default class CardBoard {
 
         this.cardCount += 1;
 
-        clone.querySelector('input').onchange = this.loadVCardFile;
+        clone.querySelector('button.close').onclick = this.removeCardColumn;
+        clone.querySelector('input.upload').onchange = this.loadVCardFile;
         clone.querySelector('.vcard').id = `vcard-${this.cardCount}`;
 
         this.cardBoard.style.columnCount = this.cardCount;
         this.cardBoard.append(clone);
 
         document.querySelector(`#vcard-${this.cardCount} input`).click();
+    }
+
+    removeCardColumn(event) {
+        event.target.parentNode.outerHTML = '';
     }
 
     loadVCardFile(event) {
