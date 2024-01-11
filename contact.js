@@ -26,6 +26,7 @@ class ContactDetail {
 }
 export default class Contact {
     #defaultPhoto = 'avatar.png';
+    addresses = [];
     emails = [];
     phoneNumbers = [];
     template = document.querySelector('#vcard-contact').content;
@@ -51,6 +52,7 @@ export default class Contact {
         clone.toString = () => this.rawData;
 
         this.phoneNumbers.length && sections.add(this.phoneNumbers);
+        this.addresses.length && sections.add(this.addresses);
         this.emails.length && sections.add(this.emails);
 
         return clone;
@@ -75,6 +77,7 @@ export default class Contact {
                 case 'FN': this.#extractFullName(value, args); break;
                 case 'TEL': this.#extractPhone(value, args); break;
                 case 'EMAIL': this.#extractEmail(value, args); break;
+                case 'ADR': this.#extractAddress(value, args); break;
                 case 'ORG': this.#extractOrganisation(line); break;
                 case 'TITLE': this.#extractJobTitle(value); break;
                 case 'PHOTO':
@@ -151,7 +154,6 @@ export default class Contact {
     }
 
     #extractFullName(value, args = []) {
-
         value = this.#maybeDecode(value, args);
 
         if (value !== this.nameComputed) {
@@ -175,6 +177,26 @@ export default class Contact {
         this.middleNames = middle || '';
         this.lastName = last || '';
         this.nameSuffix = suffix || '';
+    }
+
+    #extractAddress(value, args = []) {
+        const address = this.#processFlagsFromFieldOptions(args, value),
+            parts = value.match(/(.*)?;(.*)?;(.*)?;(.*)?;(.*)?;(.*)?;(.*)?/),
+            printable = parts.slice(1).filter(v => v).map(
+                part => this.#maybeDecode(part.trim(), args)
+            ).join(', ');
+
+        this.addresses.push(([
+            address.raw,
+            address.poBox,
+            address.suite,
+            address.street,
+            address.locality,
+            address.region,
+            address.postCode,
+            address.countryName,
+            address.value,
+        ] = [...parts, printable], address));
     }
 
     #extractOrganisation(line) {
