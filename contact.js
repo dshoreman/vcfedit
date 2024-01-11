@@ -55,6 +55,10 @@ export default class Contact {
         this.addresses.length && sections.add(this.addresses);
         this.emails.length && sections.add(this.emails);
 
+        if (this.hasInvalidLines) {
+            console.error(`Unknown lines in contact:\n\n${this.rawData}`);
+        }
+
         return clone;
     }
 
