@@ -2,6 +2,8 @@ import Contact from "./contact.js";
 
 export default class VCard {
     #cardRegex = /BEGIN:VCARD([\w\W]*?)END:VCARD/g;
+    column: HTMLDivElement;
+    filename: string;
 
     constructor(filename, parentColumn) {
         this.filename = filename;

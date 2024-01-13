@@ -1,23 +1,23 @@
 import VCard from "./vcard.js";
 
 export default class CardBoard {
-    template = document.querySelector('#vcard-column').content;
-    cardBoard = document.querySelector('#vcards');
+    template = document.querySelector<HTMLTemplateElement>('#vcard-column').content;
+    cardBoard = document.querySelector<HTMLElement>('#vcards');
     cardCount = 0;
 
     addCardColumn() {
-        const clone = this.template.cloneNode(true);
+        const clone = this.template.cloneNode(true) as HTMLElement;
 
         this.cardCount += 1;
 
-        clone.querySelector('button.close').onclick = this.removeCardColumn;
-        clone.querySelector('input.upload').onchange = this.loadVCardFile;
-        clone.querySelector('.vcard').id = `vcard-${this.cardCount}`;
+        clone.querySelector<HTMLInputElement>('button.close').onclick = this.removeCardColumn;
+        clone.querySelector<HTMLInputElement>('input.upload').onchange = this.loadVCardFile;
+        clone.querySelector<HTMLDivElement>('.vcard').id = `vcard-${this.cardCount}`;
 
-        this.cardBoard.style.columnCount = this.cardCount;
+        this.cardBoard.style.columnCount = this.cardCount.toString();
         this.cardBoard.append(clone);
 
-        document.querySelector(`#vcard-${this.cardCount} input`).click();
+        document.querySelector<HTMLInputElement>(`#vcard-${this.cardCount} input`).click();
     }
 
     removeCardColumn(event) {
