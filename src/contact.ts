@@ -1,7 +1,9 @@
+import * as ui from "./ui.js";
+
 const decoder = new TextDecoder();
 
 class ContactDetail {
-    template = document.querySelector<HTMLTemplateElement>('#vcard-contact-detail').content;
+    template = ui.template('#vcard-contact-detail').content;
     vcard: HTMLElement;
 
     constructor(contactClone) {
@@ -12,15 +14,15 @@ class ContactDetail {
         for (const item of items) {
             const elements = this.#makeNodes(item);
 
-            this.vcard.querySelector('ul').append(elements);
+            ui.element('ul', this.vcard).append(elements);
         }
     }
 
     #makeNodes(item) {
         const clone = this.template.cloneNode(true) as HTMLElement;
 
-        clone.querySelector<HTMLElement>('.contact-detail-title').innerText = item.type;
-        clone.querySelector<HTMLElement>('.contact-detail-value').innerText = item.value;
+        ui.element('.contact-detail-title', clone).innerText = item.type;
+        ui.element('.contact-detail-value', clone).innerText = item.value;
 
         return clone;
     }
@@ -47,7 +49,7 @@ export default class Contact {
 
     rawData: string;
     hasInvalidLines: boolean = false;
-    template = document.querySelector<HTMLTemplateElement>('#vcard-contact').content;
+    template = ui.template('#vcard-contact').content;
 
     constructor(rawData) {
         this.rawData = rawData;
@@ -64,9 +66,9 @@ export default class Contact {
             organisation = `${this.title}, ${organisation}`
         }
 
-        clone.querySelector('h3').innerText = this.fullName || this.emails[0]?.value || 'Unknown';
-        clone.querySelector('em').innerText = organisation || this.title || '';
-        clone.querySelector('img').src = this.photo || this.#defaultPhoto;
+        ui.element('h3', clone).innerText = this.fullName || this.emails[0]?.value || 'Unknown';
+        ui.element('em', clone).innerText = organisation || this.title || '';
+        ui.image('img', clone).src = this.photo || this.#defaultPhoto;
         clone.toString = () => this.rawData;
 
         this.phoneNumbers.length && sections.add(this.phoneNumbers);
