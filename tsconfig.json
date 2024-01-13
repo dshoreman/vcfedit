@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "module": "esnext",
+    "target": "es2022",
+
+    "outDir": "./public/js/",
+    "newLine": "lf",
+
+    "forceConsistentCasingInFileNames": true,
+  },
+  "include": ["./src/**/*"]
+}
