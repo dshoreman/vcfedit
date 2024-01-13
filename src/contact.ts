@@ -29,23 +29,23 @@ class ContactDetail {
 }
 export default class Contact {
     #defaultPhoto = 'images/avatar.png';
-    photo: string;
+    photo: string = '';
 
-    fullName: string;
-    nameRaw: string;
-    nameComputed: string;
-    firstName: string;
-    lastName: string;
-    middleNames: string;
-    namePrefix: string;
-    nameSuffix: string;
+    fullName: string = '';
+    nameRaw: string = '';
+    nameComputed: string = '';
+    firstName: string = '';
+    lastName: string = '';
+    middleNames: string = '';
+    namePrefix: string = '';
+    nameSuffix: string = '';
 
-    organisation: string;
-    title: string;
+    organisation: string = '';
+    title: string = '';
 
-    addresses = [];
-    emails = [];
-    phoneNumbers = [];
+    addresses: {}[] = [];
+    emails: {value: string}[] = [];
+    phoneNumbers: {}[] = [];
 
     rawData: string;
     hasInvalidLines: boolean = false;
@@ -133,7 +133,7 @@ export default class Contact {
         return [field, transformed];
     }
 
-    #processFlagsFromFieldOptions(options, value) {
+    #processFlagsFromFieldOptions(options: {name: string, value: string}[], value: string) {
         const field = {isPreferred: false, type: '', value};
 
         for (const flag of options) {
