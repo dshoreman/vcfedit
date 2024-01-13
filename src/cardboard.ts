@@ -21,16 +21,22 @@ export default class CardBoard {
         ui.element(`#vcard-${this.cardCount} input`).click();
     }
 
-    removeCardColumn(event) {
-        event.target.parentNode.outerHTML = '';
+    removeCardColumn(event: Event) {
+        const parent = (<HTMLElement>(<HTMLElement>event.target).parentNode)
+
+        parent.outerHTML = '';
     }
 
-    loadVCardFile(event) {
-        const file = event.target.files[0],
+    loadVCardFile(event: Event) {
+        const el = event.target as HTMLElement & {files: FileList},
+            file = el.files[0],
             reader = new FileReader(),
-            vCard = new VCard(file.name, event.target.parentNode);
+            vCard = new VCard(
+                file.name,
+                el.parentNode as HTMLDivElement,
+            );
 
-        reader.onload = () => vCard.process(reader.result);
+        reader.onload = () => vCard.process(reader.result as string);
 
         reader.readAsText(file);
     }
