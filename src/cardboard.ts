@@ -1,8 +1,9 @@
+import * as ui from "./ui.js";
 import VCard from "./vcard.js";
 
 export default class CardBoard {
-    template = document.querySelector<HTMLTemplateElement>('#vcard-column').content;
-    cardBoard = document.querySelector<HTMLElement>('#vcards');
+    template = ui.template('#vcard-column').content;
+    cardBoard = ui.element('#vcards');
     cardCount = 0;
 
     addCardColumn() {
@@ -10,14 +11,14 @@ export default class CardBoard {
 
         this.cardCount += 1;
 
-        clone.querySelector<HTMLInputElement>('button.close').onclick = this.removeCardColumn;
-        clone.querySelector<HTMLInputElement>('input.upload').onchange = this.loadVCardFile;
-        clone.querySelector<HTMLDivElement>('.vcard').id = `vcard-${this.cardCount}`;
+        ui.element('button.close', clone).onclick = this.removeCardColumn;
+        ui.element('input.upload', clone).onchange = this.loadVCardFile;
+        ui.element('.vcard', clone).id = `vcard-${this.cardCount}`;
 
         this.cardBoard.style.columnCount = this.cardCount.toString();
         this.cardBoard.append(clone);
 
-        document.querySelector<HTMLInputElement>(`#vcard-${this.cardCount} input`).click();
+        ui.element(`#vcard-${this.cardCount} input`).click();
     }
 
     removeCardColumn(event) {
