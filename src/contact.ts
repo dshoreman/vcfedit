@@ -1,7 +1,8 @@
 const decoder = new TextDecoder();
 
 class ContactDetail {
-    template = document.querySelector('#vcard-contact-detail').content;
+    template = document.querySelector<HTMLTemplateElement>('#vcard-contact-detail').content;
+    vcard: HTMLElement;
 
     constructor(contactClone) {
         this.vcard = contactClone;
@@ -16,20 +17,37 @@ class ContactDetail {
     }
 
     #makeNodes(item) {
-        const clone = this.template.cloneNode(true);
+        const clone = this.template.cloneNode(true) as HTMLElement;
 
-        clone.querySelector('.contact-detail-title').innerText = item.type;
-        clone.querySelector('.contact-detail-value').innerText = item.value;
+        clone.querySelector<HTMLElement>('.contact-detail-title').innerText = item.type;
+        clone.querySelector<HTMLElement>('.contact-detail-value').innerText = item.value;
 
         return clone;
     }
 }
 export default class Contact {
     #defaultPhoto = 'images/avatar.png';
+    photo: string;
+
+    fullName: string;
+    nameRaw: string;
+    nameComputed: string;
+    firstName: string;
+    lastName: string;
+    middleNames: string;
+    namePrefix: string;
+    nameSuffix: string;
+
+    organisation: string;
+    title: string;
+
     addresses = [];
     emails = [];
     phoneNumbers = [];
-    template = document.querySelector('#vcard-contact').content;
+
+    rawData: string;
+    hasInvalidLines: boolean = false;
+    template = document.querySelector<HTMLTemplateElement>('#vcard-contact').content;
 
     constructor(rawData) {
         this.rawData = rawData;
@@ -38,7 +56,7 @@ export default class Contact {
     }
 
     vCard() {
-        const clone = this.template.cloneNode(true),
+        const clone = this.template.cloneNode(true) as HTMLElement,
             sections = new ContactDetail(clone);
         let organisation = this.organisation || '';
 
@@ -132,7 +150,7 @@ export default class Contact {
     }
 
     #maybeDecode(value, args = []) {
-        const argsObject = {};
+        const argsObject: {ENCODING?: string} = {};
 
         for (const {name, value} of args) {
             argsObject[name] = value;
@@ -148,7 +166,7 @@ export default class Contact {
             return decoder.decode(new Uint8Array(bytes));
         }
 
-        console.warn(`Unhandled content encoding '${args.ENCODING}' for value '${value}'`);
+        console.warn(`Unhandled content encoding '${argsObject.ENCODING}' for value '${value}'`);
     }
 
     #extractEmail(email, options) {
@@ -184,7 +202,9 @@ export default class Contact {
     }
 
     #extractAddress(value, args = []) {
-        const address = this.#processFlagsFromFieldOptions(args, value),
+        const address: {
+            raw?, poBox?, suite?, street?, locality?, region?, postCode?, countryName?, value
+        } = this.#processFlagsFromFieldOptions(args, value),
             parts = value.match(/(.*)?;(.*)?;(.*)?;(.*)?;(.*)?;(.*)?;(.*)?/),
             printable = parts.slice(1).filter(v => v).map(
                 part => this.#maybeDecode(part.trim(), args)
