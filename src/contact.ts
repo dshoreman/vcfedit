@@ -6,11 +6,11 @@ class ContactDetail {
     template = ui.template('#vcard-contact-detail').content;
     vcard: HTMLElement;
 
-    constructor(contactClone) {
+    constructor(contactClone: HTMLElement) {
         this.vcard = contactClone;
     }
 
-    add(items) {
+    add(items: {type?: string, value: string}[]) {
         for (const item of items) {
             const elements = this.#makeNodes(item);
 
@@ -18,10 +18,10 @@ class ContactDetail {
         }
     }
 
-    #makeNodes(item) {
+    #makeNodes(item: {type?: string, value: string}) {
         const clone = this.template.cloneNode(true) as HTMLElement;
 
-        ui.element('.contact-detail-title', clone).innerText = item.type;
+        ui.element('.contact-detail-title', clone).innerText = item.type || '';
         ui.element('.contact-detail-value', clone).innerText = item.value;
 
         return clone;
@@ -43,15 +43,15 @@ export default class Contact {
     organisation: string = '';
     title: string = '';
 
-    addresses: {}[] = [];
-    emails: {value: string}[] = [];
-    phoneNumbers: {}[] = [];
+    addresses: {type?: string, value: string}[] = [];
+    emails: {type: string, value: string}[] = [];
+    phoneNumbers: {type: string, value: string}[] = [];
 
     rawData: string;
     hasInvalidLines: boolean = false;
     template = ui.template('#vcard-contact').content;
 
-    constructor(rawData) {
+    constructor(rawData: string) {
         this.rawData = rawData;
 
         this.#parseLines();
@@ -117,10 +117,10 @@ export default class Contact {
         }
     }
 
-    #parseArgsFromParam(param) {
+    #parseArgsFromParam(param: string): [string, {name: string, value: string}[]] {
         const [field, ...args] = param.split(';');
 
-        const transformed = args.map((arg) => {
+        const transformed = args.map((arg: string) => {
             let [name, value] = arg.split('=', 2);
 
             if (!value && 'PREF' !== name) {
@@ -151,8 +151,8 @@ export default class Contact {
         return field;
     }
 
-    #maybeDecode(value, args = []) {
-        const argsObject: {ENCODING?: string} = {};
+    #maybeDecode(value: string, args: {name: string, value: string}[] = []): string {
+        const argsObject: {ENCODING?: string, [key: string]: string} = {};
 
         for (const {name, value} of args) {
             argsObject[name] = value;
@@ -168,16 +168,16 @@ export default class Contact {
             return decoder.decode(new Uint8Array(bytes));
         }
 
-        console.warn(`Unhandled content encoding '${argsObject.ENCODING}' for value '${value}'`);
+        throw new Error(`Unhandled content encoding '${argsObject.ENCODING}' for value '${value}'`);
     }
 
-    #extractEmail(email, options) {
+    #extractEmail(email: string, options: {name: string, value: string}[]) {
         this.emails.push(
             this.#processFlagsFromFieldOptions(options, email)
         );
     }
 
-    #extractFullName(value, args = []) {
+    #extractFullName(value: string, args: {name: string, value: string}[] = []) {
         value = this.#maybeDecode(value, args);
 
         if (value !== this.nameComputed) {
@@ -187,11 +187,12 @@ export default class Contact {
         this.fullName = value;
     }
 
-    #extractName(value, args = []) {
-        const [_, last, first, middle, prefix, suffix] = value.match(/(.*)?;(.*)?;(.*)?;(.*)?;(.*)?/),
-            parts = [prefix, first, middle, last, suffix].filter(v => v).map(
-                part => this.#maybeDecode(part.trim(), args)
-            );
+    #extractName(value: string, args: {name: string, value: string}[] = []) {
+        const [_, last, first, middle, prefix, suffix] = <RegExpMatchArray>value.match(
+            /(.*)?;(.*)?;(.*)?;(.*)?;(.*)?/
+        ), parts = [prefix, first, middle, last, suffix].filter(v => v).map(
+            part => this.#maybeDecode(part.trim(), args)
+        );
 
         this.nameComputed = parts.join(' ');
         this.nameRaw = value;
@@ -203,13 +204,21 @@ export default class Contact {
         this.nameSuffix = suffix || '';
     }
 
-    #extractAddress(value, args = []) {
+    #extractAddress(value: string, args: {name: string, value: string}[] = []) {
         const address: {
-            raw?, poBox?, suite?, street?, locality?, region?, postCode?, countryName?, value
+            raw?: string,
+            poBox?: string,
+            suite?: string,
+            street?: string,
+            locality?: string,
+            region?: string,
+            postCode?: string,
+            countryName?: string,
+            value: string,
         } = this.#processFlagsFromFieldOptions(args, value),
-            parts = value.match(/(.*)?;(.*)?;(.*)?;(.*)?;(.*)?;(.*)?;(.*)?/),
-            printable = parts.slice(1).filter(v => v).map(
-                part => this.#maybeDecode(part.trim(), args)
+            parts = value.match(/(.*)?;(.*)?;(.*)?;(.*)?;(.*)?;(.*)?;(.*)?/) || '',
+            printable = (parts.slice(1) as string[]).filter((v: string): string => v).map(
+                (part: string) => this.#maybeDecode(part.trim(), args)
             ).join(', ');
 
         this.addresses.push(([
@@ -225,20 +234,20 @@ export default class Contact {
         ] = [...parts, printable], address));
     }
 
-    #extractOrganisation(line) {
+    #extractOrganisation(line: string) {
         this.organisation = line.substring(4);
     }
-    #extractJobTitle(value) {
+    #extractJobTitle(value: string) {
         this.title = value;
     }
 
-    #extractPhone(number, options) {
+    #extractPhone(number: string, options: {name: string, value: string}[]) {
         this.phoneNumbers.push(
             this.#processFlagsFromFieldOptions(options, number)
         );
     }
 
-    #extractBase64Photo(data) {
+    #extractBase64Photo(data: string) {
         this.photo = `data:image/jpg;base64,${data}`;
     }
 };

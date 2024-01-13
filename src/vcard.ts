@@ -6,12 +6,12 @@ export default class VCard {
     column: HTMLDivElement;
     filename: string;
 
-    constructor(filename, parentColumn) {
+    constructor(filename: string, parentColumn: HTMLDivElement) {
         this.filename = filename;
         this.column = parentColumn;
     }
 
-    process(vcfData) {
+    process(vcfData: string) {
         ui.element('h2', this.column).innerText = this.filename;
 
         for (const vCard of vcfData.matchAll(this.#cardRegex)) {
