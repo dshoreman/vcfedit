@@ -29,7 +29,7 @@ export default class CardBoard {
 
     loadVCardFile(event: Event) {
         const el = event.target as HTMLElement & {files: FileList},
-            file = el.files[0],
+            file = <File>el.files[0],
             reader = new FileReader(),
             vCard = new VCard(
                 file.name,
