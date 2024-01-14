@@ -12,6 +12,7 @@
     "noUnusedParameters": true,
     "exactOptionalPropertyTypes": true,
     "noImplicitReturns": true,
+    "noUncheckedIndexedAccess": true,
     "noImplicitOverride": true,
     "allowUnusedLabels": false,
     "allowUnreachableCode": false,

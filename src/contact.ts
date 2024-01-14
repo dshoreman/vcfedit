@@ -2,6 +2,26 @@ import * as ui from "./ui.js";
 
 const decoder = new TextDecoder();
 
+type FieldOption = {
+    name: string;
+    value: string;
+}
+type FieldValue = {
+    isPreferred?: boolean;
+    type: string;
+    value: string;
+}
+type AddressField = FieldValue & {
+    raw?: string;
+    poBox: string;
+    suite: string;
+    street: string;
+    locality: string;
+    region: string;
+    postCode: string;
+    countryName: string;
+}
+
 class ContactDetail {
     template = ui.template('#vcard-contact-detail').content;
     vcard: HTMLElement;
@@ -10,7 +30,7 @@ class ContactDetail {
         this.vcard = contactClone;
     }
 
-    add(items: {type?: string, value: string}[]) {
+    add(items: FieldValue[]) {
         for (const item of items) {
             const elements = this.#makeNodes(item);
 
@@ -18,15 +38,16 @@ class ContactDetail {
         }
     }
 
-    #makeNodes(item: {type?: string, value: string}) {
+    #makeNodes(item: FieldValue) {
         const clone = this.template.cloneNode(true) as HTMLElement;
 
-        ui.element('.contact-detail-title', clone).innerText = item.type || '';
+        ui.element('.contact-detail-title', clone).innerText = item.type;
         ui.element('.contact-detail-value', clone).innerText = item.value;
 
         return clone;
     }
 }
+
 export default class Contact {
     #defaultPhoto = 'images/avatar.png';
     photo: string = '';
@@ -43,9 +64,9 @@ export default class Contact {
     organisation: string = '';
     title: string = '';
 
-    addresses: {type?: string, value: string}[] = [];
-    emails: {type: string, value: string}[] = [];
-    phoneNumbers: {type: string, value: string}[] = [];
+    addresses: AddressField[] = [];
+    emails: FieldValue[] = [];
+    phoneNumbers: FieldValue[] = [];
 
     rawData: string;
     hasInvalidLines: boolean = false;
@@ -88,7 +109,7 @@ export default class Contact {
         const unfolded = this.rawData.replace(/\r\n[\t\u0020]/g, '');
 
         for (const line of unfolded.split('\r\n')) {
-            const [param, value] = line.split(/:(.*)/);
+            const [param, value] = <[string, string]>line.split(/:(.*)/);
 
             if ('' === line.trim() || ['BEGIN', 'END', 'VERSION'].includes(param)) {
                 continue;
@@ -117,11 +138,11 @@ export default class Contact {
         }
     }
 
-    #parseArgsFromParam(param: string): [string, {name: string, value: string}[]] {
-        const [field, ...args] = param.split(';');
+    #parseArgsFromParam(param: string): [string, FieldOption[]] {
+        const [field, ...args] = <[string, ...[string]]>param.split(';');
 
         const transformed = args.map((arg: string) => {
-            let [name, value] = arg.split('=', 2);
+            let [name, value] = <[string, string]>arg.split('=', 2);
 
             if (!value && 'PREF' !== name) {
                 [name, value] = [value, name];
@@ -133,8 +154,8 @@ export default class Contact {
         return [field, transformed];
     }
 
-    #processFlagsFromFieldOptions(options: {name: string, value: string}[], value: string) {
-        const field = {isPreferred: false, type: '', value};
+    #processFlagsFromFieldOptions(options: FieldOption[], value: string) {
+        const field = <FieldValue>{isPreferred: false, type: '', value};
 
         for (const flag of options) {
             if ('PREF' === flag.name) {
@@ -151,7 +172,7 @@ export default class Contact {
         return field;
     }
 
-    #maybeDecode(value: string, args: {name: string, value: string}[] = []): string {
+    #maybeDecode(value: string, args: FieldOption[] = []): string {
         const argsObject: {ENCODING?: string, [key: string]: string} = {};
 
         for (const {name, value} of args) {
@@ -163,7 +184,7 @@ export default class Contact {
         }
 
         if ('QUOTED-PRINTABLE' === argsObject.ENCODING) {
-            const bytes = [...value.matchAll(/=([A-F0-9]{2})/gi)].map(hex => parseInt(hex[1], 16));
+            const bytes = [...value.matchAll(/=([A-F0-9]{2})/gi)].map(hex => parseInt(<string>hex[1], 16));
 
             return decoder.decode(new Uint8Array(bytes));
         }
@@ -171,13 +192,13 @@ export default class Contact {
         throw new Error(`Unhandled content encoding '${argsObject.ENCODING}' for value '${value}'`);
     }
 
-    #extractEmail(email: string, options: {name: string, value: string}[]) {
+    #extractEmail(email: string, options: FieldOption[]) {
         this.emails.push(
             this.#processFlagsFromFieldOptions(options, email)
         );
     }
 
-    #extractFullName(value: string, args: {name: string, value: string}[] = []) {
+    #extractFullName(value: string, args: FieldOption[] = []) {
         value = this.#maybeDecode(value, args);
 
         if (value !== this.nameComputed) {
@@ -187,10 +208,10 @@ export default class Contact {
         this.fullName = value;
     }
 
-    #extractName(value: string, args: {name: string, value: string}[] = []) {
+    #extractName(value: string, args: FieldOption[] = []) {
         const [_, last, first, middle, prefix, suffix] = <RegExpMatchArray>value.match(
             /(.*)?;(.*)?;(.*)?;(.*)?;(.*)?/
-        ), parts = [prefix, first, middle, last, suffix].filter(v => v).map(
+        ), parts = (<string[]>[prefix, first, middle, last, suffix].filter(v => v)).map(
             part => this.#maybeDecode(part.trim(), args)
         );
 
@@ -204,20 +225,10 @@ export default class Contact {
         this.nameSuffix = suffix || '';
     }
 
-    #extractAddress(value: string, args: {name: string, value: string}[] = []) {
-        const address: {
-            raw?: string,
-            poBox?: string,
-            suite?: string,
-            street?: string,
-            locality?: string,
-            region?: string,
-            postCode?: string,
-            countryName?: string,
-            value: string,
-        } = this.#processFlagsFromFieldOptions(args, value),
-            parts = value.match(/(.*)?;(.*)?;(.*)?;(.*)?;(.*)?;(.*)?;(.*)?/) || '',
-            printable = (parts.slice(1) as string[]).filter((v: string): string => v).map(
+    #extractAddress(value: string, args: FieldOption[] = []) {
+        const address = this.#processFlagsFromFieldOptions(args, value) as AddressField,
+            parts = value.match(/(.*)?;(.*)?;(.*)?;(.*)?;(.*)?;(.*)?;(.*)?/) || [],
+            printable = parts.slice(1).filter((v: string): string => v).map(
                 (part: string) => this.#maybeDecode(part.trim(), args)
             ).join(', ');
 
@@ -231,7 +242,10 @@ export default class Contact {
             address.postCode,
             address.countryName,
             address.value,
-        ] = [...parts, printable], address));
+        ] = <[string, string, string, string, string, string, string, string, string]>[
+            ...parts,
+            printable,
+        ], address));
     }
 
     #extractOrganisation(line: string) {
