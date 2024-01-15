@@ -4,20 +4,33 @@ import * as ui from "./ui.js"
 export default class VCard {
     #cardRegex = /BEGIN:VCARD([\w\W]*?)END:VCARD/g;
     column: HTMLDivElement;
-    filename: string;
+    id: string;
+    filename: string | undefined;
 
-    constructor(filename: string, parentColumn: HTMLDivElement) {
-        this.filename = filename;
-        this.column = parentColumn;
+    constructor(id: string) {
+        this.id = id;
+        this.column = <HTMLDivElement>ui.element(`#${id}`);
+
+        this.#setHeader();
     }
 
-    process(vcfData: string) {
-        ui.element('h2', this.column).innerText = this.filename;
+    process(filename: string, vcfData: string) {
+        this.#forFile(filename);
 
         for (const vCard of vcfData.matchAll(this.#cardRegex)) {
             const contact = new Contact(vCard[0]);
 
             ui.element('.contacts', this.column).append(contact.vCard());
         }
+    }
+
+    #forFile(filename: string): void {
+        this.filename = filename;
+
+        this.#setHeader();
+    }
+
+    #setHeader() {
+        ui.element('h2', this.column).innerText = this.filename || 'Loading...';
     }
 }
