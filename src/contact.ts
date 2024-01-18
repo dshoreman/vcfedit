@@ -1,3 +1,4 @@
+import {Property, VCardProperty} from "./vcards/properties.js";
 import * as ui from "./ui.js";
 
 const decoder = new TextDecoder();
@@ -61,34 +62,34 @@ export default class Contact {
     namePrefix: string = '';
     nameSuffix: string = '';
 
-    organisation: string = '';
-    title: string = '';
-
     addresses: AddressField[] = [];
     emails: FieldValue[] = [];
     phoneNumbers: FieldValue[] = [];
 
     rawData: string;
+    properties: VCardProperty[];
     hasInvalidLines: boolean = false;
     template = ui.template('#vcard-contact').content;
 
-    constructor(rawData: string) {
+    constructor(rawData: string, properties: VCardProperty[]) {
         this.rawData = rawData;
+        this.properties = properties;
 
         this.#parseLines();
     }
 
     vCard() {
         const clone = this.template.cloneNode(true) as HTMLElement,
+            title = this.#prop(Property.orgTitle),
             sections = new ContactDetail(clone);
-        let organisation = this.organisation || '';
+        let organisation = this.#prop(Property.orgName);
 
-        if (organisation && this.title) {
-            organisation = `${this.title}, ${organisation}`
+        if (organisation && title) {
+            organisation = `${title}, ${organisation}`
         }
 
         ui.element('h3', clone).innerText = this.fullName || this.emails[0]?.value || 'Unknown';
-        ui.element('em', clone).innerText = organisation || this.title || '';
+        ui.element('em', clone).innerText = organisation || title;
         ui.image('img', clone).src = this.photo || this.#defaultPhoto;
         clone.toString = () => this.rawData;
 
@@ -101,6 +102,10 @@ export default class Contact {
         }
 
         return clone;
+    }
+
+    #prop(prop: Property): string {
+        return this.properties.find((p) => p.name === prop)?.value || '';
     }
 
     #parseLines() {
@@ -123,8 +128,6 @@ export default class Contact {
                 case 'TEL': this.#extractPhone(value, args); break;
                 case 'EMAIL': this.#extractEmail(value, args); break;
                 case 'ADR': this.#extractAddress(value, args); break;
-                case 'ORG': this.#extractOrganisation(line); break;
-                case 'TITLE': this.#extractJobTitle(value); break;
                 case 'PHOTO':
                     // Todo: Move this to `#extractPhoto` and improve parsing
                     if (param === 'PHOTO;ENCODING=BASE64;JPEG') {
@@ -246,13 +249,6 @@ export default class Contact {
             ...parts,
             printable,
         ], address));
-    }
-
-    #extractOrganisation(line: string) {
-        this.organisation = line.substring(4);
-    }
-    #extractJobTitle(value: string) {
-        this.title = value;
     }
 
     #extractPhone(number: string, options: {name: string, value: string}[]) {
