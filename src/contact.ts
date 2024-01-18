@@ -1,12 +1,8 @@
-import {Property, VCardProperty} from "./vcards/properties.js";
+import {Parameter as FieldOption, Property, VCardProperty, parameterParser} from "./vcards/properties.js";
 import * as ui from "./ui.js";
 
 const decoder = new TextDecoder();
 
-type FieldOption = {
-    name: string;
-    value: string;
-}
 type FieldValue = {
     isPreferred?: boolean;
     type: string;
@@ -21,6 +17,13 @@ type AddressField = FieldValue & {
     region: string;
     postCode: string;
     countryName: string;
+}
+
+function bridge(properties: VCardProperty[]): FieldValue[] {
+    return properties.map((property) => ({
+        type: property.parameters.find((p) => 'TYPE' === p.name || !p.name)?.value || '',
+        value: property.value,
+    }));
 }
 
 class ContactDetail {
@@ -63,8 +66,6 @@ export default class Contact {
     nameSuffix: string = '';
 
     addresses: AddressField[] = [];
-    emails: FieldValue[] = [];
-    phoneNumbers: FieldValue[] = [];
 
     rawData: string;
     properties: VCardProperty[];
@@ -80,6 +81,8 @@ export default class Contact {
 
     vCard() {
         const clone = this.template.cloneNode(true) as HTMLElement,
+            emails = bridge(this.#props(Property.email)),
+            phones = bridge(this.#props(Property.phone)),
             title = this.#prop(Property.orgTitle),
             sections = new ContactDetail(clone);
         let organisation = this.#prop(Property.orgName);
@@ -88,14 +91,14 @@ export default class Contact {
             organisation = `${title}, ${organisation}`
         }
 
-        ui.element('h3', clone).innerText = this.fullName || this.emails[0]?.value || 'Unknown';
+        ui.element('h3', clone).innerText = this.fullName || emails[0]?.value || 'Unknown';
         ui.element('em', clone).innerText = organisation || title;
         ui.image('img', clone).src = this.photo || this.#defaultPhoto;
         clone.toString = () => this.rawData;
 
-        this.phoneNumbers.length && sections.add(this.phoneNumbers);
+        phones.length && sections.add(phones);
         this.addresses.length && sections.add(this.addresses);
-        this.emails.length && sections.add(this.emails);
+        emails.length && sections.add(emails);
 
         if (this.hasInvalidLines) {
             console.error(`Unknown lines in contact:\n\n${this.rawData}`);
@@ -104,8 +107,12 @@ export default class Contact {
         return clone;
     }
 
-    #prop(prop: Property): string {
-        return this.properties.find((p) => p.name === prop)?.value || '';
+    #prop(property: Property): string {
+        return this.properties.find((p) => p.name === property)?.value || '';
+    }
+
+    #props(property: Property) {
+        return this.properties.filter((p) => p.name === property);
     }
 
     #parseLines() {
@@ -125,8 +132,6 @@ export default class Contact {
             switch(field) {
                 case 'N': this.#extractName(value, args); break;
                 case 'FN': this.#extractFullName(value, args); break;
-                case 'TEL': this.#extractPhone(value, args); break;
-                case 'EMAIL': this.#extractEmail(value, args); break;
                 case 'ADR': this.#extractAddress(value, args); break;
                 case 'PHOTO':
                     // Todo: Move this to `#extractPhoto` and improve parsing
@@ -144,17 +149,7 @@ export default class Contact {
     #parseArgsFromParam(param: string): [string, FieldOption[]] {
         const [field, ...args] = <[string, ...[string]]>param.split(';');
 
-        const transformed = args.map((arg: string) => {
-            let [name, value] = <[string, string]>arg.split('=', 2);
-
-            if (!value && 'PREF' !== name) {
-                [name, value] = [value, name];
-            }
-
-            return {name, value};
-        });
-
-        return [field, transformed];
+        return [field, args.map(parameterParser)];
     }
 
     #processFlagsFromFieldOptions(options: FieldOption[], value: string) {
@@ -193,12 +188,6 @@ export default class Contact {
         }
 
         throw new Error(`Unhandled content encoding '${argsObject.ENCODING}' for value '${value}'`);
-    }
-
-    #extractEmail(email: string, options: FieldOption[]) {
-        this.emails.push(
-            this.#processFlagsFromFieldOptions(options, email)
-        );
     }
 
     #extractFullName(value: string, args: FieldOption[] = []) {
@@ -249,12 +238,6 @@ export default class Contact {
             ...parts,
             printable,
         ], address));
-    }
-
-    #extractPhone(number: string, options: {name: string, value: string}[]) {
-        this.phoneNumbers.push(
-            this.#processFlagsFromFieldOptions(options, number)
-        );
     }
 
     #extractBase64Photo(data: string) {
