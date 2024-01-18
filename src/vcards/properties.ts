@@ -1,5 +1,9 @@
+import NameValue from "./properties/name.js";
+import {SimpleValue, ValueFormatter} from "./properties/simple.js";
+
 export enum Property {
     begin = 'BEGIN', end = 'END', version = 'VERSION',
+    name = 'N',
     phone = 'TEL', email = 'EMAIL',
     orgTitle = 'TITLE', orgName = 'ORG',
 };
@@ -21,8 +25,9 @@ export function parameterParser(parameter: string) {
 
 export class VCardProperty {
     name: Property;
+    components?: string[];
     parameters: Parameter[];
-    value: string;
+    value: ValueFormatter;
 
     constructor(line: string) {
         const [propString, value] = <[string, string]>line.split(/:(.*)/),
@@ -34,6 +39,10 @@ export class VCardProperty {
 
         this.name = property;
         this.parameters = rawParams.map(parameterParser);
-        this.value = value;
+
+        switch (property) {
+            case 'N': this.value = new NameValue(value, this.parameters); break;
+            default: this.value = new SimpleValue(value);
+        }
     }
 }

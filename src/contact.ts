@@ -1,7 +1,6 @@
+import {decodeQuotedPrintable} from "./vcards/encoding.js";
 import {Parameter as FieldOption, Property, VCardProperty, parameterParser} from "./vcards/properties.js";
 import * as ui from "./ui.js";
-
-const decoder = new TextDecoder();
 
 type FieldValue = {
     isPreferred?: boolean;
@@ -22,7 +21,7 @@ type AddressField = FieldValue & {
 function bridge(properties: VCardProperty[]): FieldValue[] {
     return properties.map((property) => ({
         type: property.parameters.find((p) => 'TYPE' === p.name || !p.name)?.value || '',
-        value: property.value,
+        value: property.value.formatted,
     }));
 }
 
@@ -57,14 +56,6 @@ export default class Contact {
     photo: string = '';
 
     fullName: string = '';
-    nameRaw: string = '';
-    nameComputed: string = '';
-    firstName: string = '';
-    lastName: string = '';
-    middleNames: string = '';
-    namePrefix: string = '';
-    nameSuffix: string = '';
-
     addresses: AddressField[] = [];
 
     rawData: string;
@@ -108,7 +99,7 @@ export default class Contact {
     }
 
     #prop(property: Property): string {
-        return this.properties.find((p) => p.name === property)?.value || '';
+        return this.properties.find((p) => p.name === property)?.value.formatted || '';
     }
 
     #props(property: Property) {
@@ -130,7 +121,6 @@ export default class Contact {
             let [field, args] = this.#parseArgsFromParam(param);
 
             switch(field) {
-                case 'N': this.#extractName(value, args); break;
                 case 'FN': this.#extractFullName(value, args); break;
                 case 'ADR': this.#extractAddress(value, args); break;
                 case 'PHOTO':
@@ -182,39 +172,22 @@ export default class Contact {
         }
 
         if ('QUOTED-PRINTABLE' === argsObject.ENCODING) {
-            const bytes = [...value.matchAll(/=([A-F0-9]{2})/gi)].map(hex => parseInt(<string>hex[1], 16));
-
-            return decoder.decode(new Uint8Array(bytes));
+            return decodeQuotedPrintable(value);
         }
 
         throw new Error(`Unhandled content encoding '${argsObject.ENCODING}' for value '${value}'`);
     }
 
     #extractFullName(value: string, args: FieldOption[] = []) {
+        const full = this.#prop(Property.name);
+
         value = this.#maybeDecode(value, args);
 
-        if (value !== this.nameComputed) {
-            value += ` (${this.firstName} ${this.lastName})`;
+        if (value !== full) {
+            value += ` (${full})`;
         }
 
         this.fullName = value;
-    }
-
-    #extractName(value: string, args: FieldOption[] = []) {
-        const [_, last, first, middle, prefix, suffix] = <RegExpMatchArray>value.match(
-            /(.*)?;(.*)?;(.*)?;(.*)?;(.*)?/
-        ), parts = (<string[]>[prefix, first, middle, last, suffix].filter(v => v)).map(
-            part => this.#maybeDecode(part.trim(), args)
-        );
-
-        this.nameComputed = parts.join(' ');
-        this.nameRaw = value;
-
-        this.namePrefix = prefix || '';
-        this.firstName = first || '';
-        this.middleNames = middle || '';
-        this.lastName = last || '';
-        this.nameSuffix = suffix || '';
     }
 
     #extractAddress(value: string, args: FieldOption[] = []) {
