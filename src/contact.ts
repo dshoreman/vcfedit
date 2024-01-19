@@ -7,16 +7,6 @@ type FieldValue = {
     type: string;
     value: string;
 }
-type AddressField = FieldValue & {
-    raw?: string;
-    poBox: string;
-    suite: string;
-    street: string;
-    locality: string;
-    region: string;
-    postCode: string;
-    countryName: string;
-}
 
 function bridge(properties: VCardProperty[]): FieldValue[] {
     return properties.map((property) => ({
@@ -56,7 +46,6 @@ export default class Contact {
     photo: string = '';
 
     fullName: string = '';
-    addresses: AddressField[] = [];
 
     rawData: string;
     properties: VCardProperty[];
@@ -72,6 +61,7 @@ export default class Contact {
 
     vCard() {
         const clone = this.template.cloneNode(true) as HTMLElement,
+            addresses = bridge(this.#props(Property.address)),
             emails = bridge(this.#props(Property.email)),
             phones = bridge(this.#props(Property.phone)),
             title = this.#prop(Property.orgTitle),
@@ -88,7 +78,7 @@ export default class Contact {
         clone.toString = () => this.rawData;
 
         phones.length && sections.add(phones);
-        this.addresses.length && sections.add(this.addresses);
+        addresses.length && sections.add(addresses);
         emails.length && sections.add(emails);
 
         if (this.hasInvalidLines) {
@@ -122,7 +112,6 @@ export default class Contact {
 
             switch(field) {
                 case 'FN': this.#extractFullName(value, args); break;
-                case 'ADR': this.#extractAddress(value, args); break;
                 case 'PHOTO':
                     // Todo: Move this to `#extractPhoto` and improve parsing
                     if (param === 'PHOTO;ENCODING=BASE64;JPEG') {
@@ -140,24 +129,6 @@ export default class Contact {
         const [field, ...args] = <[string, ...[string]]>param.split(';');
 
         return [field, args.map(parameterParser)];
-    }
-
-    #processFlagsFromFieldOptions(options: FieldOption[], value: string) {
-        const field = <FieldValue>{isPreferred: false, type: '', value};
-
-        for (const flag of options) {
-            if ('PREF' === flag.name) {
-                field.isPreferred = true;
-                continue;
-            }
-            if (!flag.name || 'TYPE' === flag.name) {
-                field.type = flag.value;
-                continue;
-            }
-            console.warn(`Unhandled option for ${value}:`, flag);
-        }
-
-        return field;
     }
 
     #maybeDecode(value: string, args: FieldOption[] = []): string {
@@ -188,29 +159,6 @@ export default class Contact {
         }
 
         this.fullName = value;
-    }
-
-    #extractAddress(value: string, args: FieldOption[] = []) {
-        const address = this.#processFlagsFromFieldOptions(args, value) as AddressField,
-            parts = value.match(/(.*)?;(.*)?;(.*)?;(.*)?;(.*)?;(.*)?;(.*)?/) || [],
-            printable = parts.slice(1).filter((v: string): string => v).map(
-                (part: string) => this.#maybeDecode(part.trim(), args)
-            ).join(', ');
-
-        this.addresses.push(([
-            address.raw,
-            address.poBox,
-            address.suite,
-            address.street,
-            address.locality,
-            address.region,
-            address.postCode,
-            address.countryName,
-            address.value,
-        ] = <[string, string, string, string, string, string, string, string, string]>[
-            ...parts,
-            printable,
-        ], address));
     }
 
     #extractBase64Photo(data: string) {
