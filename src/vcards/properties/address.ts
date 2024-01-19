@@ -23,7 +23,7 @@ export default class AddressValue implements ValueFormatter {
     extract(parameters: Parameter[]) {
         const [_, poBox, suite, street, locality, region, postCode, country] =
             <[string, string, string, string, string, string, string, string]>
-                this.original.match(/(.*)?;(.*)?;(.*)?;(.*)?;(.*)?;(.*)?;(.*)?/);
+                this.original.match(/(.*);(.*);(.*);(.*);(.*);(.*);(.*)/);
 
         this.components = decodeComponents({
             poBox, suite, street, locality, region, postCode, country

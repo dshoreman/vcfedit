@@ -21,7 +21,7 @@ export default class NameValue implements ValueFormatter {
     extract(parameters: Parameter[]) {
         const [_, familyNames, givenNames, otherNames, prefixes, suffixes] =
             <[string, string, string, string, string, string]>
-            this.original.match(/(.*)?;(.*)?;(.*)?;(.*)?;(.*)?/);
+            this.original.match(/(.*);(.*);(.*);(.*);(.*)/);
 
         this.components = decodeComponents({
             prefixes, givenNames, otherNames, familyNames, suffixes

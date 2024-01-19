@@ -29,6 +29,10 @@ export default class VCard {
         const properties = [];
 
         for (const line of this.#unfoldLines(vCard)) {
+            if (!line) {
+                continue;
+            }
+
             try {
                 properties.push(new VCardProperty(line));
             } catch (e) {
