@@ -1,8 +1,10 @@
+import {Parameter} from "../properties.js";
+
 export interface ValueFormatter {
     components?: any;
     formatted: string;
     original: string;
-    extract(): string;
+    extract(parameters: Parameter[]): string;
 }
 
 export class SimpleValue implements ValueFormatter {

@@ -1,4 +1,4 @@
-import {decodeQuotedPrintable} from "../encoding.js";
+import {decodeComponents, decodeString} from "../encoding.js";
 import {Parameter} from "../properties.js";
 import {ValueFormatter} from "./simple.js";
 
@@ -17,21 +17,17 @@ export default class AddressValue implements ValueFormatter {
 
     constructor(rawValue: string, parameters: Parameter[]) {
         this.original = rawValue;
-        this.formatted = this.extract(parameters.find(p => 'ENCODING' === p.name)?.value);
+        this.formatted = this.extract(parameters);
     }
 
-    extract(encoding?: string) {
+    extract(parameters: Parameter[]) {
         const [_, poBox, suite, street, locality, region, postCode, country] =
             <[string, string, string, string, string, string, string, string]>
                 this.original.match(/(.*)?;(.*)?;(.*)?;(.*)?;(.*)?;(.*)?;(.*)?/);
 
-        this.components = {poBox, suite, street, locality, region, postCode, country};
-
-        if ('QUOTED-PRINTABLE' === encoding) {
-            for (const [key, value] of Object.entries(this.components)) {
-                Object.assign(this.components, {[key]: decodeQuotedPrintable(value)});
-            }
-        }
+        this.components = decodeComponents({
+            poBox, suite, street, locality, region, postCode, country
+        }, parameters);
 
         return Object.values(this.components).filter(v => v).join(', ');
     }
