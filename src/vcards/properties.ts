@@ -1,10 +1,11 @@
 import AddressValue from "./properties/address.js";
 import NameValue from "./properties/name.js";
+import PhotoValue from "./properties/photo.js";
 import {SimpleValue, ValueFormatter} from "./properties/simple.js";
 
 export enum Property {
     begin = 'BEGIN', end = 'END', version = 'VERSION',
-    name = 'N',
+    name = 'N', photo = 'PHOTO',
     address = 'ADR',
     phone = 'TEL', email = 'EMAIL',
     orgTitle = 'TITLE', orgName = 'ORG',
@@ -45,6 +46,7 @@ export class VCardProperty {
         switch (property) {
             case 'N': this.value = new NameValue(value, this.parameters); break;
             case 'ADR': this.value = new AddressValue(value, this.parameters); break;
+            case 'PHOTO': this.value = new PhotoValue(value, this.parameters); break;
             default: this.value = new SimpleValue(value);
         }
     }

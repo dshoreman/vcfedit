@@ -1,4 +1,4 @@
-import {decodeComponents, decodeString} from "../encoding.js";
+import {decodeComponents} from "../encoding.js";
 import {Parameter} from "../properties.js";
 import {ValueFormatter} from "./simple.js";
 

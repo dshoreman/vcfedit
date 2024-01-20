@@ -1,5 +1,6 @@
 import {decodeQuotedPrintable} from "./vcards/encoding.js";
 import {Parameter as FieldOption, Property, VCardProperty, parameterParser} from "./vcards/properties.js";
+import PhotoValue from "./vcards/properties/photo.js";
 import * as ui from "./ui.js";
 
 type FieldValue = {
@@ -42,9 +43,6 @@ class ContactDetail {
 }
 
 export default class Contact {
-    #defaultPhoto = 'images/avatar.png';
-    photo: string = '';
-
     fullName: string = '';
 
     rawData: string;
@@ -74,7 +72,7 @@ export default class Contact {
 
         ui.element('h3', clone).innerText = this.fullName || emails[0]?.value || 'Unknown';
         ui.element('em', clone).innerText = organisation || title;
-        ui.image('img', clone).src = this.photo || this.#defaultPhoto;
+        ui.image('img', clone).src = this.#prop(Property.photo) || PhotoValue.default();
         clone.toString = () => this.rawData;
 
         phones.length && sections.add(phones);
@@ -112,12 +110,6 @@ export default class Contact {
 
             switch(field) {
                 case 'FN': this.#extractFullName(value, args); break;
-                case 'PHOTO':
-                    // Todo: Move this to `#extractPhoto` and improve parsing
-                    if (param === 'PHOTO;ENCODING=BASE64;JPEG') {
-                        this.#extractBase64Photo(value);
-                        break;
-                    }
                 default:
                     console.warn(`Unhandled VCF line: '${line}'`);
                     this.hasInvalidLines = true;
@@ -159,9 +151,5 @@ export default class Contact {
         }
 
         this.fullName = value;
-    }
-
-    #extractBase64Photo(data: string) {
-        this.photo = `data:image/jpg;base64,${data}`;
     }
 };
