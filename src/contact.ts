@@ -43,6 +43,28 @@ export default class Contact {
         this.properties = properties;
     }
 
+    download() {
+        const a = document.createElement('a'),
+            data = this.export() + '\r\n';
+
+        a.setAttribute('download', `${this.#displayAs().replace(' ', '-').toLowerCase()}.vcf`);
+        a.setAttribute('href', `data:text/plain;charset=utf-8,${encodeURIComponent(data)}`);
+        a.style.display = 'none';
+
+        document.body.appendChild(a).click();
+        document.body.removeChild(a);
+    }
+
+    export() {
+        const data = [];
+
+        for (const property of this.properties || []) {
+            data.push(property.export());
+        }
+
+        return data.join('\r\n');
+    }
+
     vCard() {
         const clone = this.template.cloneNode(true) as HTMLElement,
             sections = new ContactDetail(clone);

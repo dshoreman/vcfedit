@@ -29,4 +29,15 @@ export default class NameValue implements ValueFormatter {
 
         return Object.values(this.components).filter(v => v).join(' ');
     }
+
+    export() {
+        if (!this.components) {
+            throw new Error("Contact is missing name components for conversion.");
+        }
+
+        const c = this.components,
+            values = [c.familyNames, c.givenNames, c.otherNames, c.prefixes, c.suffixes];
+
+        return values.join(';');
+    }
 }

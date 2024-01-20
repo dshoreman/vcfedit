@@ -5,6 +5,7 @@ export interface ValueFormatter {
     formatted: string;
     original: string;
     extract(parameters: Parameter[]): string;
+    export(): string;
 }
 
 export class SimpleValue implements ValueFormatter {
@@ -17,4 +18,5 @@ export class SimpleValue implements ValueFormatter {
     }
 
     extract = () => this.original;
+    export = () => this.original;
 }

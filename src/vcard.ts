@@ -19,9 +19,12 @@ export default class VCard {
         this.#forFile(filename);
 
         for (const vCard of vcfData.matchAll(this.#cardRegex)) {
-            const contact = this.#contactFromVCard(vCard[0]);
+            const contact = this.#contactFromVCard(vCard[0]),
+                contactCard = contact.vCard();
 
-            ui.element('.contacts', this.column).append(contact.vCard());
+            ui.element('.save', contactCard).onclick = () => contact.download();
+
+            ui.element('.contacts', this.column).append(contactCard);
         }
     }
 

@@ -51,6 +51,10 @@ export class VCardProperty {
         }
     }
 
+    export(): string {
+        return `${this.name}:${this.value.export()}`
+    }
+
     type(): string {
         return this.parameters.find(
             (p) => 'TYPE' === p.name || !p.name
