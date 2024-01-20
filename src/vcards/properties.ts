@@ -5,7 +5,7 @@ import {SimpleValue, ValueFormatter} from "./properties/simple.js";
 
 export enum Property {
     begin = 'BEGIN', end = 'END', version = 'VERSION',
-    name = 'N', photo = 'PHOTO',
+    formattedName = 'FN', name = 'N', photo = 'PHOTO',
     address = 'ADR',
     phone = 'TEL', email = 'EMAIL',
     orgTitle = 'TITLE', orgName = 'ORG',
@@ -49,5 +49,11 @@ export class VCardProperty {
             case 'PHOTO': this.value = new PhotoValue(value, this.parameters); break;
             default: this.value = new SimpleValue(value);
         }
+    }
+
+    type(): string {
+        return this.parameters.find(
+            (p) => 'TYPE' === p.name || !p.name
+        )?.value || '';
     }
 }
