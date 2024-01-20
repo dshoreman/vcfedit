@@ -13,6 +13,7 @@ export default class CardBoard {
 
         this.cardCount += 1;
         ui.element('button.close', clone).onclick = this.removeCardColumn;
+        ui.element('button.save', clone).onclick = () => this.downloadCard(id);
         ui.element('input.upload', clone).onchange = (ev) => this.loadVCardFile(ev);
         ui.element('.vcard', clone).id = id;
 
@@ -21,6 +22,16 @@ export default class CardBoard {
 
         this.vCards[id] = new VCard(id);
         ui.element(`#${id} input`).click();
+    }
+
+    downloadCard(cardID: string) {
+        const card = this.vCards[cardID];
+
+        if (!card) {
+            throw new Error("Card '${cardID}' no longer exists.");
+        }
+
+        card.download();
     }
 
     removeCardColumn(event: Event) {

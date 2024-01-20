@@ -4,6 +4,7 @@ import * as ui from "./ui.js"
 
 export default class VCard {
     #cardRegex = /BEGIN:VCARD([\w\W]*?)END:VCARD/g;
+    contacts: Contact[] = [];
     column: HTMLDivElement;
     id: string;
     filename: string | undefined;
@@ -25,7 +26,28 @@ export default class VCard {
             ui.element('.save', contactCard).onclick = () => contact.download();
 
             ui.element('.contacts', this.column).append(contactCard);
+            this.contacts.push(contact);
         }
+    }
+
+    download() {
+        const a = document.createElement('a'),
+            data = this.export() + '\r\n';
+
+        a.setAttribute('href', `data:text/plain;charset=utf-8,${encodeURIComponent(data)}`);
+        a.setAttribute('download', `${this.filename}`);
+        a.style.display = 'none';
+
+        document.body.appendChild(a).click();
+        document.body.removeChild(a);
+    }
+
+    export() {
+        const cards: string[] = [];
+
+        this.contacts.forEach(c => cards.push(c.export()));
+
+        return cards.join('\r\n');
     }
 
     #contactFromVCard(vCard: string): Contact {
