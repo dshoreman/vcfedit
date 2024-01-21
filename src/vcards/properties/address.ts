@@ -31,4 +31,12 @@ export default class AddressValue implements ValueFormatter {
 
         return Object.values(this.components).filter(v => v).join(', ');
     }
+
+    export() {
+        if (!this.components) {
+            throw new Error("Contact is missing name components for conversion.");
+        }
+
+        return Object.values(this.components).join(';');
+    }
 }
