@@ -3,7 +3,7 @@ import {ValueFormatter} from "./simple.js";
 
 export default class PhotoValue implements ValueFormatter {
     formatted: string;
-    original: any;
+    original: string;
 
     constructor(rawValue: string, parameters: Parameter[]) {
         this.original = rawValue;
@@ -24,5 +24,15 @@ export default class PhotoValue implements ValueFormatter {
         console.warn(`Photo has unknown/unsupported encoding '${encoding}'.`);
 
         return PhotoValue.default();
+    }
+
+    export() {
+        const padLength = 'PHOTO:'.length,
+            padRegex = new RegExp(`/^-{${padLength}}/`);
+
+        return this.original
+            .padStart(this.original.length + padLength, '-')
+            .replace(/(.{1,64})/g, '$1\r\n ')
+            .replace(padRegex, '');
     }
 }
