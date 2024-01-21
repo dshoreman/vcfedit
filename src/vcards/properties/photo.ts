@@ -26,13 +26,11 @@ export default class PhotoValue implements ValueFormatter {
         return PhotoValue.default();
     }
 
-    export() {
-        const padLength = 'PHOTO:'.length;
-
+    export(parametersLength: number) {
         return this.original
-            .padStart(this.original.length + padLength, '-')
+            .padStart(this.original.length + parametersLength, '-')
             .replace(/(?<=.{1,64})(.{1,63})/g, '$1\r\n ')
-            .replace(new RegExp(`^-{${padLength}}`), '')
+            .replace(new RegExp(`^-{${parametersLength}}`), '')
             .trim() + '\r\n';
     }
 }

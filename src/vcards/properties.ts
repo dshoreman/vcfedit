@@ -52,7 +52,9 @@ export class VCardProperty {
     }
 
     export(): string {
-        return `${this.name}:${this.value.export()}`
+        const propertiesPart = this.name;
+
+        return `${propertiesPart}:${this.value.export(propertiesPart.length + 1)}`
     }
 
     type(): string {
