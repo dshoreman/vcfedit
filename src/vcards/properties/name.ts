@@ -37,11 +37,8 @@ export default class NameValue implements ValueFormatter {
             throw new Error("Contact is missing name components for conversion.");
         }
 
-        const c = this.components;
+        const c = encodeComponents(this.components, this.parameters);
 
-        return encodeComponents(
-            [c.familyNames, c.givenNames, c.otherNames, c.prefixes, c.suffixes],
-            this.parameters,
-        );
+        return [c.familyNames, c.givenNames, c.otherNames, c.prefixes, c.suffixes].join(';');
     }
 }
