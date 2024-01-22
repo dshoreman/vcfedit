@@ -4,11 +4,18 @@ import PhotoValue from "./properties/photo.js";
 import {SimpleValue, ValueFormatter} from "./properties/simple.js";
 
 export enum Property {
-    begin = 'BEGIN', end = 'END', version = 'VERSION',
-    formattedName = 'FN', name = 'N', photo = 'PHOTO',
-    address = 'ADR',
-    phone = 'TEL', email = 'EMAIL',
-    orgTitle = 'TITLE', orgName = 'ORG',
+    begin = 'BEGIN', end = 'END', source =  'SOURCE', kind = 'KIND', xml = 'XML',   // General Properties
+    formattedName = 'FN', name = 'N', nickname = 'NICKNAME', photo = 'PHOTO',       // Identification Properties
+        birthday = 'BDAY', anniversary = 'ANNIVERSARY', gender = 'GENDER',          //     ...
+    address = 'ADR',                                                                // Delivery Addressing Properties
+    phone = 'TEL', email = 'EMAIL', impp = 'IMPP', lang = 'LANG',                   // Communications Properties
+    timezone = 'TZ', geo = 'GEO',                                                   // Geographical Properties
+    orgTitle = 'TITLE', orgRole = 'ROLE', orgName = 'ORG',                          // Organizational Properties
+        logo = 'LOGO', member = 'MEMBER', related = 'RELATED',                      //     ...
+    categories = 'CATEGORIES', note = 'NOTE', product = 'PRODID', revision = 'REV', // Explanatory Properties
+        sound = 'SOUND', uid = 'UID', pidmap = 'CLIENTPIDMAP', url = 'URL', version = 'VERSION',    //   ...
+    key = 'KEY',                                                                    // Security Properties
+    busyUrl = 'FBURL', calUserUri = 'CALADRURI', calUri = 'CALURI',                 // Calendar Properties
 };
 
 export type Parameter = {
