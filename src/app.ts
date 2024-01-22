@@ -10,9 +10,15 @@ ui.element('#extracard').onclick = () => {
 };
 
 ui.element('#new-file-form').onsubmit = (ev) => {
-    const filename = ui.element('input[type=text]', ev.target).value;
+    const input = <HTMLInputElement & {parentNode: HTMLElement}>
+        ui.element('input[type=text]', (<HTMLElement>ev.target));
+    let filename = input.value;
+
+    if (!filename.endsWith('.vcf')) {
+        filename += '.vcf';
+    }
 
     ev.preventDefault();
     board.addCardColumn(filename);
-    ev.target.parentElement.hidePopover();
+    input.parentNode.hidePopover();
 };

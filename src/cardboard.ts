@@ -49,7 +49,9 @@ export default class CardBoard {
     }
 
     #handleDragEnd(event: DragEvent) {
-        this.dragging.classList.remove('dragging');
+        (<HTMLElement>event.target).classList.remove('dragging');
+
+        this.dragging = null;
     }
 
     #handleDragOver(event: DragEvent) {
@@ -57,11 +59,11 @@ export default class CardBoard {
     }
 
     #handleDrop(event: DragEvent) {
-        const sourceNode = <HTMLElement>this.dragging,
+        const sourceNode = <HTMLElement & {parentNode: HTMLElement}>this.dragging,
             target = <HTMLElement>event.target;
 
         if (target.classList.contains('contacts')) {
-            sourceNode.parentNode?.removeChild(sourceNode);
+            sourceNode.parentNode.removeChild(sourceNode);
             target.prepend(sourceNode);
         }
 
