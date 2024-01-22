@@ -9,8 +9,8 @@ body {
 }
 button#extracard {
     position: absolute;
-    top: 2vh;
-    right: 3vw;
+    top: 1rem;
+    right: 1.5rem;
 }
 h1 {
     font-family: 'Salsa', cursive;
@@ -32,7 +32,8 @@ h1 {
     margin: 0 20px;
     min-width: 20rem;
     padding: 0 1px 8px;
-    width: 20rem;
+    min-width: 20rem;
+    max-width: 27rem;
 }
 .vcard button {
     float: right;
@@ -44,6 +45,9 @@ h1 {
 .vcard h2 {
     height: 25px;
     margin: 8px 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-wrap: nowrap;
 }
 .vcard input {
     display: none;
