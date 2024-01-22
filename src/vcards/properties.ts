@@ -47,7 +47,7 @@ export class VCardProperty {
             case 'N': this.value = new NameValue(value, this.parameters); break;
             case 'ADR': this.value = new AddressValue(value, this.parameters); break;
             case 'PHOTO': this.value = new PhotoValue(value, this.parameters, folded); break;
-            default: this.value = new SimpleValue(value);
+            default: this.value = new SimpleValue(value, this.parameters);
         }
     }
 
