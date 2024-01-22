@@ -2,6 +2,7 @@ import * as ui from "./ui.js";
 import VCard from "./vcard.js";
 
 export default class CardBoard {
+    dragging: HTMLElement|null = null;
     template = ui.template('#vcard-column').content;
     cardBoard = ui.element('#vcards');
     cardCount = 0;
@@ -15,6 +16,9 @@ export default class CardBoard {
         ui.element('button.close', clone).onclick = this.removeCardColumn;
         ui.element('button.save', clone).onclick = () => this.downloadCard(id);
         ui.element('input.upload', clone).onchange = (ev) => this.loadVCardFile(ev);
+        ui.element('.contacts', clone).addEventListener('dragstart', ev => this.#handleDragStart(ev));
+        ui.element('.contacts', clone).addEventListener('dragover', ev => this.#handleDragOver(ev), false);
+        ui.element('.contacts', clone).addEventListener('drop', ev => this.#handleDrop(ev));
         ui.element('.vcard', clone).id = id;
 
         this.cardBoard.style.columnCount = this.cardCount.toString();
@@ -32,6 +36,30 @@ export default class CardBoard {
         }
 
         card.download();
+    }
+
+    #handleDragStart(event: DragEvent) {
+        const target = <HTMLElement>event.target;
+
+        this.dragging = target;
+
+        target.classList.add('dragging');
+    }
+
+    #handleDragOver(event: DragEvent) {
+        event.preventDefault();
+    }
+
+    #handleDrop(event: DragEvent) {
+        const sourceNode = <HTMLElement>this.dragging,
+            target = <HTMLElement>event.target;
+
+        if (target.classList.contains('contacts')) {
+            sourceNode.parentNode?.removeChild(sourceNode);
+            target.prepend(sourceNode);
+        }
+
+        sourceNode.classList.remove('dragging');
     }
 
     removeCardColumn(event: Event) {
