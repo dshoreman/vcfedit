@@ -32,12 +32,12 @@ export class VCardProperty {
     parameters: Parameter[];
     value: ValueFormatter;
 
-    constructor(line: string) {
-        const [propString, value] = <[string, string]>line.split(/:(.*)/),
+    constructor(folded: string, unfolded: string) {
+        const [propString, value] = <[string, string]>unfolded.split(/:(.*)/),
             [property, ...rawParams] = <[Property, ...[string]]>propString.split(';');
 
         if (!Object.values(Property).includes(property)) {
-            throw new Error(`Unhandled VCF line: '${line}'`);
+            throw new Error(`Unhandled VCF line: '${unfolded}'`);
         }
 
         this.name = property;
@@ -46,7 +46,7 @@ export class VCardProperty {
         switch (property) {
             case 'N': this.value = new NameValue(value, this.parameters); break;
             case 'ADR': this.value = new AddressValue(value, this.parameters); break;
-            case 'PHOTO': this.value = new PhotoValue(value, this.parameters); break;
+            case 'PHOTO': this.value = new PhotoValue(value, this.parameters, folded); break;
             default: this.value = new SimpleValue(value);
         }
     }

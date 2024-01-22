@@ -11,7 +11,7 @@ export default class NameValue implements ValueFormatter {
         suffixes: string,
     }|undefined;
     formatted: string;
-    original: any;
+    original: string;
 
     constructor(rawValue: string, parameters: Parameter[]) {
         this.original = rawValue;

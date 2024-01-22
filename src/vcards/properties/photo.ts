@@ -2,11 +2,13 @@ import {Parameter} from "../properties.js";
 import {ValueFormatter} from "./simple.js";
 
 export default class PhotoValue implements ValueFormatter {
+    folded: string;
     formatted: string;
     original: string;
 
-    constructor(rawValue: string, parameters: Parameter[]) {
+    constructor(rawValue: string, parameters: Parameter[], folded?: string) {
         this.original = rawValue;
+        this.folded = folded || rawValue;
         this.formatted = this.extract(parameters);
     }
 
@@ -27,9 +29,13 @@ export default class PhotoValue implements ValueFormatter {
     }
 
     export(parametersLength: number) {
+        const findAfter = this.folded.search(/^PHOTO(;(.*))?:/m),
+            foldedAt = this.folded.indexOf('\r\n ', findAfter),
+            foldLength = foldedAt - findAfter;
+
         return this.original
             .padStart(this.original.length + parametersLength, '-')
-            .replace(/(?<=.{1,64})(.{1,63})/g, '$1\r\n ')
+            .replace(new RegExp(`(?<=.{1,${foldLength}})(.{1,${foldLength-1}})`, 'g'), '$1\r\n ')
             .replace(new RegExp(`^-{${parametersLength}}`), '')
             .trim() + '\r\n';
     }

@@ -51,15 +51,12 @@ export default class VCard {
     }
 
     #contactFromVCard(vCard: string): Contact {
-        const properties = [];
+        const properties = [],
+            unfoldedLines = this.#unfoldLines(vCard);
 
-        for (const line of this.#unfoldLines(vCard)) {
-            if (!line) {
-                continue;
-            }
-
+        for (const unfoldedLine of unfoldedLines) {
             try {
-                properties.push(new VCardProperty(line));
+                properties.push(new VCardProperty(vCard, unfoldedLine));
             } catch (e) {
                 console.warn(`Oops! ${e}`);
             }
@@ -80,9 +77,10 @@ export default class VCard {
 
     // Split continuous lines on CRLF followed by space or tab.
     // Section 3.2 of RFC 6350: "Line Delimiting and Folding".
-    #unfoldLines(vCard: string): string[] {
-        const unfolded = vCard.replace(/\r\n[\t\u0020]/g, '');
-
-        return unfolded.split('\r\n').map(v => v);
+    #unfoldLines(foldedLines: string): string[] {
+        return foldedLines
+            .replace(/\r\n[\t\u0020]/g, '')
+            .split('\r\n')
+            .map(v => v);
     }
 }
