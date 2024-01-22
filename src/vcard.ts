@@ -81,6 +81,6 @@ export default class VCard {
         return foldedLines
             .replace(/\r\n[\t\u0020]/g, '')
             .split('\r\n')
-            .map(v => v);
+            .filter(v => v);
     }
 }
