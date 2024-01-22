@@ -43,7 +43,7 @@ export class VCardProperty {
         const [propString, value] = <[string, string]>unfolded.split(/:(.*)/),
             [property, ...rawParams] = <[Property, ...[string]]>propString.split(';');
 
-        if (!Object.values(Property).includes(property)) {
+        if (!Object.values(Property).includes(property) && !property.startsWith('X-')) {
             throw new Error(`Unhandled VCF line: '${unfolded}'`);
         }
 
