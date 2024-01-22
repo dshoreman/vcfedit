@@ -1,6 +1,7 @@
 import {Parameter} from "./properties.js";
 
-const decoder = new TextDecoder();
+const encoder = new TextEncoder(),
+    decoder = new TextDecoder();
 
 export function decodeComponents<Type extends {[key: string]: string}>(
     components: Type,
@@ -29,4 +30,28 @@ export function decodeQuotedPrintable(value: string) {
     );
 
     return decoder.decode(new Uint8Array(bytes));
+}
+
+export function encodeComponents(components: string[], parameters: Parameter[]): string {
+    return components.map(v => encodeString(v, parameters)).join(';');
+}
+
+export function encodeString(value: string, parameters: Parameter[]): string {
+    const encoding = parameters.find(p => 'ENCODING' === p.name)?.value;
+
+    if ('QUOTED-PRINTABLE' === encoding) {
+        return encodeQuotedPrintable(value);
+    }
+
+    return value;
+}
+
+export function encodeQuotedPrintable(value: string) {
+    let encoded = '';
+
+    encoder.encode(value).forEach((byte: number) => {
+        encoded += `=${byte.toString(16).toUpperCase()}`;
+    });
+
+    return encoded;
 }

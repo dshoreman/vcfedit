@@ -1,4 +1,4 @@
-import {decodeComponents} from "../encoding.js";
+import {decodeComponents, encodeComponents} from "../encoding.js";
 import {Parameter} from "../properties.js";
 import {ValueFormatter} from "./simple.js";
 
@@ -12,10 +12,12 @@ export default class NameValue implements ValueFormatter {
     }|undefined;
     formatted: string;
     original: string;
+    parameters: Parameter[];
 
     constructor(rawValue: string, parameters: Parameter[]) {
         this.original = rawValue;
         this.formatted = this.extract(parameters);
+        this.parameters = parameters;
     }
 
     extract(parameters: Parameter[]) {
@@ -35,9 +37,11 @@ export default class NameValue implements ValueFormatter {
             throw new Error("Contact is missing name components for conversion.");
         }
 
-        const c = this.components,
-            values = [c.familyNames, c.givenNames, c.otherNames, c.prefixes, c.suffixes];
+        const c = this.components;
 
-        return values.join(';');
+        return encodeComponents(
+            [c.familyNames, c.givenNames, c.otherNames, c.prefixes, c.suffixes],
+            this.parameters,
+        );
     }
 }
