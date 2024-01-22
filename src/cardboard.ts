@@ -18,6 +18,7 @@ export default class CardBoard {
         ui.element('input.upload', clone).onchange = (ev) => this.loadVCardFile(ev);
         ui.element('.contacts', clone).addEventListener('dragstart', ev => this.#handleDragStart(ev));
         ui.element('.contacts', clone).addEventListener('dragover', ev => this.#handleDragOver(ev), false);
+        ui.element('.contacts', clone).addEventListener('dragend', ev => this.#handleDragEnd(ev));
         ui.element('.contacts', clone).addEventListener('drop', ev => this.#handleDrop(ev));
         ui.element('.vcard', clone).id = id;
 
@@ -44,6 +45,10 @@ export default class CardBoard {
         this.dragging = target;
 
         target.classList.add('dragging');
+    }
+
+    #handleDragEnd(event: DragEvent) {
+        this.dragging.classList.remove('dragging');
     }
 
     #handleDragOver(event: DragEvent) {
