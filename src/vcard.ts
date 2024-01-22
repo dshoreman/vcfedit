@@ -9,15 +9,15 @@ export default class VCard {
     id: string;
     filename: string | undefined;
 
-    constructor(id: string) {
+    constructor(id: string, filename?: string) {
         this.id = id;
         this.column = <HTMLDivElement>ui.element(`#${id}`);
 
-        this.#setHeader();
+        this.#setHeader(filename);
     }
 
     process(filename: string, vcfData: string) {
-        this.#forFile(filename);
+        this.#setHeader(filename);
 
         for (const vCard of vcfData.matchAll(this.#cardRegex)) {
             const contact = this.#contactFromVCard(vCard[0]),
@@ -65,13 +65,11 @@ export default class VCard {
         return new Contact(vCard, properties);
     }
 
-    #forFile(filename: string): void {
-        this.filename = filename;
+    #setHeader(filename?: string) {
+        if (filename) {
+            this.filename = filename;
+        }
 
-        this.#setHeader();
-    }
-
-    #setHeader() {
         ui.element('h2', this.column).innerText = this.filename || 'Loading...';
     }
 

@@ -8,7 +8,7 @@ export default class CardBoard {
     cardCount = 0;
     vCards: {[key: string]: VCard} = {};
 
-    addCardColumn() {
+    addCardColumn(filename?: string) {
         const clone = this.template.cloneNode(true) as HTMLElement,
             id = 'vcard-' + Date.now().toString().slice(-7);
 
@@ -25,8 +25,9 @@ export default class CardBoard {
         this.cardBoard.style.columnCount = this.cardCount.toString();
         this.cardBoard.append(clone);
 
-        this.vCards[id] = new VCard(id);
-        ui.element(`#${id} input`).click();
+        this.vCards[id] = new VCard(id, filename);
+
+        return id;
     }
 
     downloadCard(cardID: string) {

@@ -7,10 +7,29 @@ body {
     margin: 0;
     padding: 8px;
 }
-button#extracard {
+button#extracard, button#emptycard {
+    background-color: #18282b;
+    border: 1px solid #becdc4;
+    color: #becdc4;
+    font-family: 'Play', sans-serif;
+    font-weight: bold;
+    padding: 0.5rem 1rem;
     position: absolute;
-    top: 1rem;
-    right: 1.5rem;
+    top: 0.6rem;
+}
+button#extracard:hover, button#emptycard:hover {
+    background: #3a4f4d;
+    color: #f5efe9;
+}
+button#emptycard {
+    right: 1rem;
+}
+button#extracard {
+    right: 8rem;
+}
+#new-file {
+    top: 3rem;
+    right: 1rem;
 }
 h1 {
     font-family: 'Salsa', cursive;
