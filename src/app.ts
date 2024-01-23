@@ -20,5 +20,5 @@ ui.element('#new-file-form').onsubmit = (ev) => {
 
     ev.preventDefault();
     board.addCardColumn(filename);
-    input.parentNode.hidePopover();
+    ui.element('#new-file').hidePopover();
 };
