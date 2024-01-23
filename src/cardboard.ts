@@ -1,5 +1,8 @@
+import Contact from "./contact.js";
 import * as ui from "./ui.js";
 import VCard from "./vcard.js";
+
+type ElementWithParent = HTMLElement & {parentNode: HTMLElement};
 
 export default class CardBoard {
     dragging: HTMLElement|null = null;
@@ -59,10 +62,17 @@ export default class CardBoard {
     }
 
     #handleDrop(event: DragEvent) {
-        const sourceNode = <HTMLElement & {parentNode: HTMLElement}>this.dragging,
-            target = <HTMLElement>event.target;
+        const sourceNode = <ElementWithParent>this.dragging,
+            target = <ElementWithParent>event.target;
 
         if (target.classList.contains('contacts')) {
+            const oldCard = <VCard>this.vCards[(<HTMLElement>sourceNode.parentNode.parentNode).id],
+                newCard = <VCard>this.vCards[target.parentNode.id],
+                contact = <Contact>oldCard.contacts[sourceNode.id];
+
+            newCard.contacts[contact.id] = contact;
+            delete oldCard.contacts[contact.id];
+
             sourceNode.parentNode.removeChild(sourceNode);
             target.prepend(sourceNode);
         }

@@ -33,12 +33,14 @@ class ContactDetail {
 }
 
 export default class Contact {
+    id: string;
     rawData: string;
     properties: VCardProperty[];
     hasInvalidLines: boolean = false;
     template = ui.template('#vcard-contact').content;
 
     constructor(rawData: string, properties: VCardProperty[]) {
+        this.id = `contact-${Math.random().toString(36).slice(2, 9)}`;
         this.rawData = rawData;
         this.properties = properties;
     }
@@ -69,10 +71,10 @@ export default class Contact {
         const clone = this.template.cloneNode(true) as HTMLElement,
             sections = new ContactDetail(clone);
 
+        ui.element('.contact', clone).id = this.id;
         ui.element('h3', clone).innerText = this.#displayAs();
         ui.element('em', clone).innerText = this.#displayOrg();
         ui.image('img', clone).src = this.#prop(Property.photo) || PhotoValue.default();
-        clone.toString = () => this.rawData;
 
         sections.add(this.#props(Property.phone));
         sections.add(this.#props(Property.address));
