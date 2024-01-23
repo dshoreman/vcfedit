@@ -66,18 +66,24 @@ export default class CardBoard {
             target = <ElementWithParent>event.target;
 
         if (target.classList.contains('contacts')) {
-            const oldCard = <VCard>this.vCards[(<HTMLElement>sourceNode.parentNode.parentNode).id],
-                newCard = <VCard>this.vCards[target.parentNode.id],
-                contact = <Contact>oldCard.contacts[sourceNode.id];
-
-            newCard.contacts[contact.id] = contact;
-            delete oldCard.contacts[contact.id];
-
-            sourceNode.parentNode.removeChild(sourceNode);
-            target.prepend(sourceNode);
+            this.#moveContact(
+                <VCard>this.vCards[(<HTMLElement>sourceNode.parentNode.parentNode).id],
+                <VCard>this.vCards[target.parentNode.id],
+            );
         }
 
         sourceNode.classList.remove('dragging');
+    }
+
+    #moveContact(oldCard: VCard, newCard: VCard) {
+        const contactCard = (<HTMLElement>this.dragging);
+
+        newCard.contacts[contactCard.id] = <Contact>oldCard.contacts[contactCard.id],
+
+        ui.element('.contacts', oldCard.column).removeChild(contactCard);
+        ui.element('.contacts', newCard.column).prepend(contactCard);
+
+        delete oldCard.contacts[contactCard.id];
     }
 
     removeCardColumn(event: Event) {
