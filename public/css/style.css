@@ -7,10 +7,29 @@ body {
     margin: 0;
     padding: 8px;
 }
-button#extracard {
+button#extracard, button#emptycard {
+    background-color: #18282b;
+    border: 1px solid #becdc4;
+    color: #becdc4;
+    font-family: 'Play', sans-serif;
+    font-weight: bold;
+    padding: 0.5rem 1rem;
     position: absolute;
-    top: 1rem;
-    right: 1.5rem;
+    top: 0.6rem;
+}
+button#extracard:hover, button#emptycard:hover {
+    background: #3a4f4d;
+    color: #f5efe9;
+}
+button#emptycard {
+    right: 1rem;
+}
+button#extracard {
+    right: 8rem;
+}
+#new-file {
+    top: 3rem;
+    right: 1rem;
 }
 h1 {
     font-family: 'Salsa', cursive;
@@ -73,6 +92,18 @@ li.contact {
     overflow: auto;
     padding: 0 0 1vh;
 }
+li.contact.hovering {
+    margin: 4vh 0 1vh;
+}
+li.contact.hovering::before {
+    content: '☞';
+    color: #3a4f4d;
+    font-size: 2rem;
+    font-weight: bold;
+    position: absolute;
+    margin-left: -0.9rem;
+    margin-top: -2.5rem;
+}
 li.contact > *:not(.contact-header):not(:empty) {
     padding: 6px 6px 0;
 }
@@ -96,4 +127,7 @@ li.contact > p {
     height: 40px;
     margin-right: 8px;
     width: 40px;
+}
+.dragging {
+    opacity: 0.5;
 }

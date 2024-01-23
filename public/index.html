@@ -12,7 +12,14 @@
     <body>
         <h1>vCard Editor</h1>
 
-        <button id="extracard">Add vCard File</button>
+        <button id="extracard">➫ Add vCard</button>
+        <button id="emptycard" popovertarget="new-file">✚ New File</button>
+        <div id="new-file" popover anchor="emptycard">
+            <form id="new-file-form">
+                <input type="text" placeholder="Contacts.vcf" autofocus>
+                <input type="submit" value="Create">
+            </form>
+        </div>
 
         <div id="vcards"></div>
 
@@ -27,9 +34,9 @@
         </template>
 
         <template id="vcard-contact">
-            <li class="contact">
+            <li class="contact" draggable="true">
                 <div class="contact-header">
-                    <img />
+                    <img draggable="false" />
                     <button class="save" title="Save vCard">dl</button>
                     <h3></h3>
                     <em></em>

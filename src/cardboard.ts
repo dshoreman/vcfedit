@@ -1,13 +1,15 @@
+import Contact from "./contact.js";
 import * as ui from "./ui.js";
 import VCard from "./vcard.js";
 
 export default class CardBoard {
+    dragging: HTMLElement|null = null;
     template = ui.template('#vcard-column').content;
     cardBoard = ui.element('#vcards');
     cardCount = 0;
     vCards: {[key: string]: VCard} = {};
 
-    addCardColumn() {
+    addCardColumn(filename?: string) {
         const clone = this.template.cloneNode(true) as HTMLElement,
             id = 'vcard-' + Date.now().toString().slice(-7);
 
@@ -15,13 +17,18 @@ export default class CardBoard {
         ui.element('button.close', clone).onclick = this.removeCardColumn;
         ui.element('button.save', clone).onclick = () => this.downloadCard(id);
         ui.element('input.upload', clone).onchange = (ev) => this.loadVCardFile(ev);
+        ui.element('.contacts', clone).addEventListener('dragstart', ev => this.#handleDragStart(ev));
+        ui.element('.contacts', clone).addEventListener('dragend', ev => this.#handleDragEnd(ev));
+        ui.element('.vcard', clone).addEventListener('dragover', ev => this.#handleDragOver(ev), false);
+        ui.element('.vcard', clone).addEventListener('drop', ev => this.#handleDrop(ev));
         ui.element('.vcard', clone).id = id;
 
         this.cardBoard.style.columnCount = this.cardCount.toString();
         this.cardBoard.append(clone);
 
-        this.vCards[id] = new VCard(id);
-        ui.element(`#${id} input`).click();
+        this.vCards[id] = new VCard(id, filename);
+
+        return id;
     }
 
     downloadCard(cardID: string) {
@@ -32,6 +39,72 @@ export default class CardBoard {
         }
 
         card.download();
+    }
+
+    #handleDragStart(event: DragEvent) {
+        const target = <HTMLElement>event.target;
+
+        this.dragging = target;
+
+        target.classList.add('dragging');
+    }
+
+    #handleDragEnd(event: DragEvent) {
+        (<HTMLElement>event.target).classList.remove('dragging');
+
+        document.querySelector('.hovering')?.classList.remove('hovering');
+        this.dragging = null;
+    }
+
+    #handleDragOver(event: DragEvent) {
+        const hovering = document.elementFromPoint(event.clientX, event.clientY),
+            contact = hovering?.closest('.contact') as HTMLElement;
+
+        event.preventDefault();
+
+        if (contact) {
+            document.querySelector('.hovering')?.classList.remove('hovering');
+            contact.classList.add('hovering');
+        }
+    }
+
+    #handleDrop(event: DragEvent) {
+        const sourceNode = <HTMLElement>this.dragging,
+            sourceVCard = this.#nearestVCard(sourceNode),
+            targetVCard = this.#nearestVCard(event.target as HTMLElement),
+            beforeContact = document.elementFromPoint(event.clientX, event.clientY)?.closest('.contact');
+
+        this.#moveContact(sourceVCard, targetVCard, beforeContact);
+
+        sourceNode.classList.remove('dragging');
+    }
+
+    #moveContact(oldCard: VCard, newCard: VCard, beforeContact?: Element|null) {
+        const contactCard = <HTMLElement>this.dragging,
+            contacts = ui.element('.contacts', newCard.column);
+
+        newCard.contacts[contactCard.id] = <Contact>oldCard.contacts[contactCard.id],
+
+        ui.element('.contacts', oldCard.column).removeChild(contactCard);
+        if (beforeContact) {
+            contacts.insertBefore(contactCard, beforeContact);
+        } else {
+            contacts.prepend(contactCard);
+        }
+
+        delete oldCard.contacts[contactCard.id];
+    }
+
+    #nearestVCard(element: HTMLElement|null): VCard {
+        if (element && !element?.classList.contains('vcard')) {
+            element = element.closest('.vcard');
+        }
+
+        if (!element) {
+            throw new Error("Couldn't identify correct vCard column to drop in.");
+        }
+
+        return <VCard>this.vCards[element.id];
     }
 
     removeCardColumn(event: Event) {
