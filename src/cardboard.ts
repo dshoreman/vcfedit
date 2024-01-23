@@ -52,31 +52,45 @@ export default class CardBoard {
     #handleDragEnd(event: DragEvent) {
         (<HTMLElement>event.target).classList.remove('dragging');
 
+        document.querySelector('.hovering')?.classList.remove('hovering');
         this.dragging = null;
     }
 
     #handleDragOver(event: DragEvent) {
+        const hovering = document.elementFromPoint(event.clientX, event.clientY),
+            contact = hovering?.closest('.contact') as HTMLElement;
+
         event.preventDefault();
+
+        if (contact) {
+            document.querySelector('.hovering')?.classList.remove('hovering');
+            contact.classList.add('hovering');
+        }
     }
 
     #handleDrop(event: DragEvent) {
-        const sourceNode = <HTMLElement>this.dragging;
+        const sourceNode = <HTMLElement>this.dragging,
+            sourceVCard = this.#nearestVCard(sourceNode),
+            targetVCard = this.#nearestVCard(event.target as HTMLElement),
+            beforeContact = document.elementFromPoint(event.clientX, event.clientY)?.closest('.contact');
 
-        this.#moveContact(
-            this.#nearestVCard(sourceNode),
-            this.#nearestVCard(event.target as HTMLElement),
-        );
+        this.#moveContact(sourceVCard, targetVCard, beforeContact);
 
         sourceNode.classList.remove('dragging');
     }
 
-    #moveContact(oldCard: VCard, newCard: VCard) {
-        const contactCard = <HTMLElement>this.dragging;
+    #moveContact(oldCard: VCard, newCard: VCard, beforeContact?: Element|null) {
+        const contactCard = <HTMLElement>this.dragging,
+            contacts = ui.element('.contacts', newCard.column);
 
         newCard.contacts[contactCard.id] = <Contact>oldCard.contacts[contactCard.id],
 
         ui.element('.contacts', oldCard.column).removeChild(contactCard);
-        ui.element('.contacts', newCard.column).prepend(contactCard);
+        if (beforeContact) {
+            contacts.insertBefore(contactCard, beforeContact);
+        } else {
+            contacts.prepend(contactCard);
+        }
 
         delete oldCard.contacts[contactCard.id];
     }

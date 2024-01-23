@@ -92,6 +92,18 @@ li.contact {
     overflow: auto;
     padding: 0 0 1vh;
 }
+li.contact.hovering {
+    margin: 4vh 0 1vh;
+}
+li.contact.hovering::before {
+    content: '☞';
+    color: #3a4f4d;
+    font-size: 2rem;
+    font-weight: bold;
+    position: absolute;
+    margin-left: -0.9rem;
+    margin-top: -2.5rem;
+}
 li.contact > *:not(.contact-header):not(:empty) {
     padding: 6px 6px 0;
 }
