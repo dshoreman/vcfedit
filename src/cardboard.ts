@@ -59,16 +59,20 @@ export default class CardBoard {
 
     #handleDragOver(event: DragEvent) {
         const hovering = document.elementFromPoint(event.clientX, event.clientY),
-            contact = hovering?.closest('.contact') as HTMLElement;
+            contact = <HTMLElement|null>hovering?.closest('.contact');
 
         event.preventDefault();
 
         if (contact) {
             this.#resetHover();
-            contact.classList.add('hovering');
-            contact.style.marginTop = `${contact.offsetHeight + 10}px`;
             this.lastHovered = contact;
         }
+        if (!contact || (this.dragging && contact.matches(`#${this.dragging.id}`))) {
+            return;
+        }
+
+        contact.classList.add('hovering');
+        contact.style.marginTop = `${contact.offsetHeight + 10}px`;
     }
 
     #handleDrop(event: DragEvent) {
@@ -81,7 +85,9 @@ export default class CardBoard {
                 event.clientY + (<HTMLElement>this.lastHovered).offsetHeight
             )?.closest('.contact');
 
-        this.#moveContact(sourceVCard, targetVCard, contactBelow || nextContact);
+        if (![contactBelow?.id, nextContact?.id].includes(sourceNode.id)) {
+            this.#moveContact(sourceVCard, targetVCard, contactBelow || nextContact);
+        }
 
         sourceNode.classList.remove('dragging');
     }
