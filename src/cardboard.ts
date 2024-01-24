@@ -3,10 +3,11 @@ import * as ui from "./ui.js";
 import VCard from "./vcard.js";
 
 export default class CardBoard {
-    dragging: HTMLElement|null = null;
-    template = ui.template('#vcard-column').content;
     cardBoard = ui.element('#vcards');
     cardCount = 0;
+    dragging: HTMLElement|null = null;
+    lastHovered: HTMLElement|null = null;
+    template = ui.template('#vcard-column').content;
     vCards: {[key: string]: VCard} = {};
 
     addCardColumn(filename?: string) {
@@ -52,7 +53,7 @@ export default class CardBoard {
     #handleDragEnd(event: DragEvent) {
         (<HTMLElement>event.target).classList.remove('dragging');
 
-        document.querySelector('.hovering')?.classList.remove('hovering');
+        this.#resetHover();
         this.dragging = null;
     }
 
@@ -63,8 +64,10 @@ export default class CardBoard {
         event.preventDefault();
 
         if (contact) {
-            document.querySelector('.hovering')?.classList.remove('hovering');
+            this.#resetHover();
             contact.classList.add('hovering');
+            contact.style.marginTop = `${contact.offsetHeight + 10}px`;
+            this.lastHovered = contact;
         }
     }
 
@@ -72,9 +75,13 @@ export default class CardBoard {
         const sourceNode = <HTMLElement>this.dragging,
             sourceVCard = this.#nearestVCard(sourceNode),
             targetVCard = this.#nearestVCard(event.target as HTMLElement),
-            beforeContact = document.elementFromPoint(event.clientX, event.clientY)?.closest('.contact');
+            contactBelow = document.elementFromPoint(event.clientX, event.clientY)?.closest('.contact'),
+            nextContact = document.elementFromPoint(
+                event.clientX,
+                event.clientY + (<HTMLElement>this.lastHovered).offsetHeight
+            )?.closest('.contact');
 
-        this.#moveContact(sourceVCard, targetVCard, beforeContact);
+        this.#moveContact(sourceVCard, targetVCard, contactBelow || nextContact);
 
         sourceNode.classList.remove('dragging');
     }
@@ -105,6 +112,15 @@ export default class CardBoard {
         }
 
         return <VCard>this.vCards[element.id];
+    }
+
+    #resetHover() {
+        const wasHovering = <HTMLElement|null>document.querySelector('.hovering');
+
+        if (wasHovering) {
+            wasHovering.style.marginTop = '1vh';
+            wasHovering.classList.remove('hovering');
+        }
     }
 
     removeCardColumn(event: Event) {
