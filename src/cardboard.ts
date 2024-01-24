@@ -88,11 +88,42 @@ export default class CardBoard {
                 event.clientY + sourceNode.offsetHeight
             )?.closest('.contact');
 
-        if (![contactBelow?.id, nextContact?.id].includes(sourceNode.id)) {
-            this.#moveContact(sourceVCard, targetVCard, contactBelow || nextContact);
+        if (contactBelow && contactBelow.id !== sourceNode.id) {
+            this.#mergeContacts(sourceVCard, targetVCard, contactBelow)
+        } else if (nextContact?.id !== sourceNode.id) {
+            this.#moveContact(sourceVCard, targetVCard, nextContact);
         }
 
         sourceNode.classList.remove('dragging');
+    }
+
+    #mergeContacts(oldCard: VCard, newCard: VCard, mergeInto: Element) {
+        const dialog = <HTMLDialogElement>ui.element('#merge'),
+            left = document.createElement('ul'),
+            right = document.createElement('ul'),
+            oldContact = <Contact>oldCard.contacts[(<HTMLElement>this.dragging).id],
+            newContact = <Contact>newCard.contacts[mergeInto.id];
+
+        for (const {name, value} of oldContact.properties) {
+            const line = document.createElement('li')
+
+            line.innerHTML = `<b>${name}</b> ${value.formatted}`;
+            left.appendChild(line);
+        }
+
+        for (const {name, value} of newContact.properties) {
+            const line = document.createElement('li')
+
+            line.innerHTML = `<b>${name}</b> ${value.formatted}`;
+            right.appendChild(line);
+        }
+
+        ui.element('.compare', dialog).innerHTML = '';
+        ui.element('.compare', dialog).appendChild(left);
+        ui.element('.compare', dialog).appendChild(right);
+        ui.element('button.close', dialog).onclick = () => dialog.close();
+
+        dialog.showModal();
     }
 
     #moveContact(oldCard: VCard, newCard: VCard, beforeContact?: Element|null) {
