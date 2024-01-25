@@ -131,8 +131,12 @@ li.contact > p {
 .dragging {
     opacity: 0.5;
 }
+#merge {
+    padding: 16px 32px;
+}
 #merge .compare {
     display: flex;
+    column-gap: 50px;
 }
 .merge-column {
     max-width: 40vw
@@ -140,22 +144,25 @@ li.contact > p {
 .merge-row {
     align-items: center;
     display: grid;
-    grid-template-columns: 35% 65%;
+    grid-gap: 3px;
+    grid-template-areas:
+        'name params params'
+        'value value value';
+    margin-top: 15px;
 }
-.merge-row div {
-    padding: 2px 5px 0;
-}
-.merge-row-name span {
-    clear: both;
-    float: left;
-}
-.merge-row-name span:first-of-type {
+.merge-row-name {
     font-weight: bold;
+    grid-area: name;
 }
-.merge-row-name span:last-of-type {
+.merge-row-params {
     font-style: italic;
+    font-weight: bold;
+    grid-area: params;
+    text-align: right;
 }
 .merge-row-value {
+    grid-area: value;
     text-overflow: ellipsis;
     overflow: hidden;
+    padding-left: 10px;
 }

@@ -1,4 +1,5 @@
 import Contact from "./contact.js";
+import MergeWindow from "./merge.js";
 import * as ui from "./ui.js";
 import VCard from "./vcard.js";
 
@@ -98,43 +99,12 @@ export default class CardBoard {
     }
 
     #mergeContacts(oldCard: VCard, newCard: VCard, mergeInto: Element) {
-        const dialog = <HTMLDialogElement>ui.element('#merge'),
-            oldContact = <Contact>oldCard.contacts[(<HTMLElement>this.dragging).id],
-            newContact = <Contact>newCard.contacts[mergeInto.id];
-        let left = '', right = '';
+        const merge = new MergeWindow(
+            <Contact>oldCard.contacts[(<HTMLElement>this.dragging).id],
+            <Contact>newCard.contacts[mergeInto.id],
+        );
 
-        for (const {name, parameters, value} of oldContact.properties) {
-            left += `<div class="merge-row">
-                <div class="merge-row-name">
-                    <span>${name}</span>
-                    <span>${parameters.map(p => {
-                        if (p.name && p.value) return `${p.name}=${p.value}`;
-                        else return p.name || p.value;
-                    }).join(', ')}</span>
-                </div>
-                <div class="merge-row-value">${value.formatted}</div>
-            </div>`;
-        }
-
-        for (const {name, parameters, value} of newContact.properties) {
-            right += `<div class="merge-row">
-                <div class="merge-row-name">
-                    <span>${name}</span>
-                    <span>${parameters.map(p => {
-                        if (p.name && p.value) return `${p.name}=${p.value}`;
-                        else return p.name || p.value;
-                    }).join(', ')}</span>
-                </div>
-                <div class="merge-row-value">${value.formatted}</div>
-            </div>`;
-        }
-
-        ui.element('.compare', dialog).innerHTML = '';
-        ui.element('.compare', dialog).innerHTML += `<div class="merge-column">${left}</div>`;
-        ui.element('.compare', dialog).innerHTML += `<div class="merge-column">${right}</div>`;
-        ui.element('button.close', dialog).onclick = () => dialog.close();
-
-        dialog.showModal();
+        merge.show();
     }
 
     #moveContact(oldCard: VCard, newCard: VCard, beforeContact?: Element|null) {
