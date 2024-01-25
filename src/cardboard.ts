@@ -99,28 +99,39 @@ export default class CardBoard {
 
     #mergeContacts(oldCard: VCard, newCard: VCard, mergeInto: Element) {
         const dialog = <HTMLDialogElement>ui.element('#merge'),
-            left = document.createElement('ul'),
-            right = document.createElement('ul'),
             oldContact = <Contact>oldCard.contacts[(<HTMLElement>this.dragging).id],
             newContact = <Contact>newCard.contacts[mergeInto.id];
+        let left = '', right = '';
 
-        for (const {name, value} of oldContact.properties) {
-            const line = document.createElement('li')
-
-            line.innerHTML = `<b>${name}</b> ${value.formatted}`;
-            left.appendChild(line);
+        for (const {name, parameters, value} of oldContact.properties) {
+            left += `<div class="merge-row">
+                <div class="merge-row-name">
+                    <span>${name}</span>
+                    <span>${parameters.map(p => {
+                        if (p.name && p.value) return `${p.name}=${p.value}`;
+                        else return p.name || p.value;
+                    }).join(', ')}</span>
+                </div>
+                <div class="merge-row-value">${value.formatted}</div>
+            </div>`;
         }
 
-        for (const {name, value} of newContact.properties) {
-            const line = document.createElement('li')
-
-            line.innerHTML = `<b>${name}</b> ${value.formatted}`;
-            right.appendChild(line);
+        for (const {name, parameters, value} of newContact.properties) {
+            right += `<div class="merge-row">
+                <div class="merge-row-name">
+                    <span>${name}</span>
+                    <span>${parameters.map(p => {
+                        if (p.name && p.value) return `${p.name}=${p.value}`;
+                        else return p.name || p.value;
+                    }).join(', ')}</span>
+                </div>
+                <div class="merge-row-value">${value.formatted}</div>
+            </div>`;
         }
 
         ui.element('.compare', dialog).innerHTML = '';
-        ui.element('.compare', dialog).appendChild(left);
-        ui.element('.compare', dialog).appendChild(right);
+        ui.element('.compare', dialog).innerHTML += `<div class="merge-column">${left}</div>`;
+        ui.element('.compare', dialog).innerHTML += `<div class="merge-column">${right}</div>`;
         ui.element('button.close', dialog).onclick = () => dialog.close();
 
         dialog.showModal();

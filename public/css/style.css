@@ -131,3 +131,31 @@ li.contact > p {
 .dragging {
     opacity: 0.5;
 }
+#merge .compare {
+    display: flex;
+}
+.merge-column {
+    max-width: 40vw
+}
+.merge-row {
+    align-items: center;
+    display: grid;
+    grid-template-columns: 35% 65%;
+}
+.merge-row div {
+    padding: 2px 5px 0;
+}
+.merge-row-name span {
+    clear: both;
+    float: left;
+}
+.merge-row-name span:first-of-type {
+    font-weight: bold;
+}
+.merge-row-name span:last-of-type {
+    font-style: italic;
+}
+.merge-row-value {
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
