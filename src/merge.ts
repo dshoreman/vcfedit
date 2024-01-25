@@ -1,5 +1,6 @@
 import Contact from "./contact";
 import * as ui from "./ui.js";
+import {Property} from "./vcards/properties.js";
 
 export default class MergeWindow {
     dialog: HTMLDialogElement;
@@ -28,12 +29,14 @@ export default class MergeWindow {
     #generateColumnHTML(contact: Contact) {
         let html = '';
 
-        for (const {name, parameters, value} of contact.properties) {
+        for (const {name, parameters, value} of contact.properties.filter(p =>
+            ![Property.begin, Property.end, Property.version].includes(p.name)
+        )) {
             html += `<div class="merge-row">
                 <div class="merge-row-name">${name}</div>
                 <div class="merge-row-params">${parameters.map(p => {
                     if (p.name && p.value) return `${p.name}=${p.value}`;
-                    else return p.name || p.value;
+                    return p.name || p.value;
                 }).join(', ')}</div>
                 <div class="merge-row-value">${value.formatted}</div>
             </div>`;
