@@ -145,9 +145,14 @@ li.contact > p {
 .merge-row {
     align-items: center;
     display: grid;
-    grid-gap: 3px;
+    gap: 5px 10px;
     grid-template-columns: repeat(12, 1fr);
-    margin-top: 15px;
+    margin-top: 20px;
+}
+.merge-row-buttons {
+    grid-column: 12;
+    grid-row: 1 / span 2;
+    text-align: right;
 }
 .merge-row-name {
     font-weight: bold;
@@ -157,14 +162,27 @@ li.contact > p {
 .merge-row-params {
     font-style: italic;
     font-weight: bold;
-    grid-column: 4 / -1;
+    grid-column: 4 / -2;
     grid-row: 1;
     text-align: right;
 }
 .merge-row-value {
-    grid-column: 1 / -1;
+    grid-column: 1 / -2;
     grid-row: 2;
     text-overflow: ellipsis;
     overflow: hidden;
     padding-left: 10px;
+}
+.compare-right .merge-row-buttons {
+    grid-column: 1 / 2;
+    text-align: left;
+}
+.compare-right .merge-row-name {
+    grid-column: 2 / 5;
+}
+.compare-right .merge-row-params {
+    grid-column: 5 / -1;
+}
+.compare-right .merge-row-value {
+    grid-column: 2 / -1;
 }
