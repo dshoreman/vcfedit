@@ -23,6 +23,9 @@ export type Parameter = {
     value: string,
 };
 
+export const HiddenPropertyFilter = (p: VCardProperty) =>
+    ![Property.begin, Property.end, Property.version].includes(p.name);
+
 export function parameterParser(parameter: string) {
     let [name, value] = <[string, string]>parameter.split('=', 2);
 

@@ -1,6 +1,6 @@
 import Contact from "./contact";
 import * as ui from "./ui.js";
-import {Property} from "./vcards/properties.js";
+import {HiddenPropertyFilter} from "./vcards/properties.js";
 
 export default class MergeWindow {
     dialog: HTMLDialogElement;
@@ -14,34 +14,20 @@ export default class MergeWindow {
         this.oldContact = oldContact;
     }
 
-    generateHTML() {
-        return this.#generateColumnHTML(this.oldContact)
-             + this.#generateColumnHTML(this.newContact);
-    }
+    #generateColumnHTML = (contact: Contact, side: 'left'|'right') =>
+        contact.properties.filter(HiddenPropertyFilter)
+            .forEach(({name, parameters, value}) => ui.element(`.compare-${side}`, this.dialog)
+                .appendChild(ui.applyValues('merge-contact-detail', {
+                    name, value: value.formatted, params: parameters.map(
+                        p => (p.name && p.value) ? `${p.name}=${p.value}` : p.name || p.value
+                    ).join(', ')})));
 
     show() {
         ui.element('button.close', this.dialog).onclick = () => this.dialog.close();
-        ui.element('.compare', this.dialog).innerHTML = this.generateHTML();
+
+        this.#generateColumnHTML(this.oldContact, 'left');
+        this.#generateColumnHTML(this.newContact, 'right');
 
         this.dialog.showModal();
-    }
-
-    #generateColumnHTML(contact: Contact) {
-        let html = '';
-
-        for (const {name, parameters, value} of contact.properties.filter(p =>
-            ![Property.begin, Property.end, Property.version].includes(p.name)
-        )) {
-            html += `<div class="merge-row">
-                <div class="merge-row-name">${name}</div>
-                <div class="merge-row-params">${parameters.map(p => {
-                    if (p.name && p.value) return `${p.name}=${p.value}`;
-                    return p.name || p.value;
-                }).join(', ')}</div>
-                <div class="merge-row-value">${value.formatted}</div>
-            </div>`;
-        }
-
-        return `<div class="merge-column">${html}</div>`;
     }
 }
