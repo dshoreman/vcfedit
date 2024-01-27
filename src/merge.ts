@@ -52,6 +52,10 @@ export default class MergeWindow {
         }
 
         contacts[otherSide].properties.push(property);
+        contacts[fromSide].properties = contacts[fromSide].properties
+            .filter(p => p.name !== name || p.value.formatted !== value);
+
+        this.#refreshColumn(contacts[fromSide], fromSide);
         this.#refreshColumn(contacts[otherSide], otherSide);
     }
 
