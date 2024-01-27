@@ -42,18 +42,9 @@ export default class MergeWindow {
             row = <HTMLElement>ev.target.parentElement?.parentElement,
             name = ui.element('.merge-row-name', row).innerText,
             value = ui.element('.merge-row-value', row).innerText,
-            otherSide = fromSide === 'left' ? 'right' : 'left',
-            property = contacts[fromSide].properties.find(p =>
-                p.name === name && p.value.formatted === value
-            );
+            otherSide = fromSide === 'left' ? 'right' : 'left';
 
-        if (!property) {
-            throw new Error("Couldn't find property '${name}' with value '${value}'")
-        }
-
-        contacts[otherSide].properties.push(property);
-        contacts[fromSide].properties = contacts[fromSide].properties
-            .filter(p => p.name !== name || p.value.formatted !== value);
+        contacts[fromSide].moveProperty(contacts[otherSide], name, value);
 
         this.#refreshColumn(contacts[fromSide], fromSide);
         this.#refreshColumn(contacts[otherSide], otherSide);

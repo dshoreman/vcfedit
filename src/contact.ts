@@ -45,6 +45,15 @@ export default class Contact {
         this.properties = properties;
     }
 
+    moveProperty(contact: Contact, propname: string, value: string) {
+        const endProperty = <VCardProperty>contact.properties.pop(),
+            property = this.properties.splice(this.properties.findIndex(
+                p => p.name === propname && p.value.formatted === value
+            ), 1)[0] as VCardProperty;
+
+        contact.properties.push(property, endProperty);
+    }
+
     download() {
         const a = document.createElement('a'),
             data = this.export() + '\r\n';
