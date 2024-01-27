@@ -46,12 +46,16 @@ export default class Contact {
     }
 
     moveProperty(contact: Contact, propname: string, value: string) {
-        const endProperty = <VCardProperty>contact.properties.pop(),
-            property = this.properties.splice(this.properties.findIndex(
-                p => p.name === propname && p.value.formatted === value
-            ), 1)[0] as VCardProperty;
+        const oldIndex = this.properties.findIndex(p =>
+            p.name === propname && p.value.formatted === value
+        ), vCardEnd = <VCardProperty>contact.properties.pop();
 
-        contact.properties.push(property, endProperty);
+        contact.properties = [
+            ...contact.properties.slice(0, oldIndex + 1),
+            this.properties.splice(oldIndex, 1)[0] as VCardProperty,
+            ...contact.properties.slice(oldIndex + 1),
+            vCardEnd,
+        ];
     }
 
     download() {
