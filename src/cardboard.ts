@@ -100,8 +100,8 @@ export default class CardBoard {
 
     #mergeContacts(oldCard: VCard, newCard: VCard, mergeInto: Element) {
         const merge = new MergeWindow(
-            <Contact>oldCard.contacts[(<HTMLElement>this.dragging).id],
-            <Contact>newCard.contacts[mergeInto.id],
+            oldCard, <Contact>oldCard.contacts[(<HTMLElement>this.dragging).id],
+            newCard, <Contact>newCard.contacts[mergeInto.id],
         );
 
         merge.show();

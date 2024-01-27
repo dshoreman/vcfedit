@@ -1,25 +1,27 @@
 import Contact from "./contact";
 import * as ui from "./ui.js";
+import VCard from "./vcard";
 import {HiddenPropertyFilter} from "./vcards/properties.js";
 
 export default class MergeWindow {
+    contacts: {left: Contact, right: Contact};
     dialog: HTMLDialogElement;
-    newContact: Contact;
-    oldContact: Contact;
+    newVCard: VCard;
+    oldVCard: VCard;
 
-    constructor(oldContact: Contact, newContact: Contact) {
+    constructor(oldVCard: VCard, oldContact: Contact, newVCard: VCard, newContact: Contact) {
+        this.contacts = {left: oldContact.clone(), right: newContact.clone()};
         this.dialog = <HTMLDialogElement>ui.element('#merge');
-
-        this.newContact = newContact;
-        this.oldContact = oldContact;
+        this.newVCard = newVCard;
+        this.oldVCard = oldVCard;
     }
 
-    #generateButtons(side: 'left' | 'right') {
+    #generateButtons(from: 'left' | 'right') {
         const button = document.createElement('button'),
             buttons = document.createElement('div');
 
-        button.innerText = {left: '>', right: '<'}[side];
-        button.onclick = (ev) => this.#handleMerge(side, ev as MouseEvent & {target: HTMLElement});
+        button.innerText = {left: '>', right: '<'}[from];
+        button.onclick = (event) => this.#markForMerging(event, from);
         buttons.className = 'merge-row-buttons';
         buttons.append(button);
 
@@ -37,17 +39,27 @@ export default class MergeWindow {
             ui.element(`.compare-${side}`, this.dialog).appendChild(row);
         });
 
-    #handleMerge(fromSide: 'left' | 'right', ev: MouseEvent & {target: HTMLElement}) {
-        const contacts = {left: this.oldContact, right: this.newContact},
-            row = <HTMLElement>ev.target.parentElement?.parentElement,
-            name = ui.element('.merge-row-name', row).innerText,
-            value = ui.element('.merge-row-value', row).innerText,
-            otherSide = fromSide === 'left' ? 'right' : 'left';
+    #markForMerging(event: MouseEvent, from: 'left'|'right') {
+        const row = <HTMLElement>(<HTMLElement>event.target).parentElement?.parentElement,
+            to = from === 'left' ? 'right' : 'left';
 
-        contacts[fromSide].moveProperty(contacts[otherSide], name, value);
+        this.contacts[from].moveProperty(
+            this.contacts[to],
+            ui.element('.merge-row-name', row).innerText,
+            ui.element('.merge-row-value', row).innerText,
+        );
 
-        this.#refreshColumn(contacts[fromSide], fromSide);
-        this.#refreshColumn(contacts[otherSide], otherSide);
+        this.#refreshColumn(this.contacts.left, 'left');
+        this.#refreshColumn(this.contacts.right, 'right');
+    }
+
+    #merge() {
+        this.oldVCard.contacts[this.contacts.left.id] = this.contacts.left;
+        this.newVCard.contacts[this.contacts.right.id] = this.contacts.right;
+        this.#refreshColumn(this.contacts.left, 'left');
+        this.#refreshColumn(this.contacts.right, 'right');
+
+        this.dialog.close();
     }
 
     #refreshColumn(contact: Contact, side: 'left' | 'right') {
@@ -58,9 +70,10 @@ export default class MergeWindow {
 
     show() {
         ui.element('button.close', this.dialog).onclick = () => this.dialog.close();
+        ui.element('button.confirm', this.dialog).onclick = () => this.#merge();
 
-        this.#generateColumnHTML(this.oldContact, 'left');
-        this.#generateColumnHTML(this.newContact, 'right');
+        this.#refreshColumn(this.contacts.left, 'left');
+        this.#refreshColumn(this.contacts.right, 'right');
 
         this.dialog.showModal();
     }

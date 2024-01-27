@@ -45,6 +45,14 @@ export default class Contact {
         this.properties = properties;
     }
 
+    clone() {
+        const clone = new Contact(this.rawData, [...this.properties]);
+
+        clone.id = this.id;
+
+        return clone;
+    }
+
     moveProperty(contact: Contact, propname: string, value: string) {
         const oldIndex = this.properties.findIndex(p =>
             p.name === propname && p.value.formatted === value
