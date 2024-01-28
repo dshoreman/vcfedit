@@ -50,6 +50,12 @@ export default class VCard {
         return cards.join('\r\n');
     }
 
+    refreshContact(contact: Contact) {
+        this.contacts[contact.id] = contact;
+
+        ui.element(`#${contact.id}`, this.column).replaceWith(contact.vCard());
+    }
+
     #contactFromVCard(vCard: string): Contact {
         const properties = [],
             unfoldedLines = this.#unfoldLines(vCard);

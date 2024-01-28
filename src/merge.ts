@@ -54,16 +54,18 @@ export default class MergeWindow {
     }
 
     #merge() {
-        this.oldVCard.contacts[this.contacts.left.id] = this.contacts.left;
-        this.newVCard.contacts[this.contacts.right.id] = this.contacts.right;
-        this.#refreshColumn(this.contacts.left, 'left');
-        this.#refreshColumn(this.contacts.right, 'right');
+        this.#refreshColumn(this.contacts.left, 'left', this.oldVCard);
+        this.#refreshColumn(this.contacts.right, 'right', this.newVCard);
 
         this.dialog.close();
     }
 
-    #refreshColumn(contact: Contact, side: 'left' | 'right') {
+    #refreshColumn(contact: Contact, side: 'left' | 'right', card?: VCard) {
         ui.element(`.compare-${side}`, this.dialog).innerHTML = '';
+
+        if (card) {
+            card.refreshContact(contact);
+        }
 
         this.#generateColumnHTML(contact, side);
     }
