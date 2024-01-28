@@ -7,22 +7,30 @@ body {
     margin: 0;
     padding: 8px;
 }
+button {
+    background-color: transparent;
+    border-radius: 4px;
+    border: 1px solid;
+    color: #becdc4;
+    font-family: 'Salsa', cursive;
+    font-weight: bold;
+    outline: none;
+    padding: 3px 4px;
+}
+button:hover {
+    color: #f5efe9;
+}
 button#extracard, button#emptycard {
     background-color: #18282b;
-    border: 1px solid #becdc4;
-    color: #becdc4;
     font-family: 'Play', sans-serif;
-    font-weight: bold;
     padding: 0.5rem 1rem;
     position: absolute;
+    right: 1rem;
     top: 0.6rem;
 }
 button#extracard:hover, button#emptycard:hover {
     background: #3a4f4d;
     color: #f5efe9;
-}
-button#emptycard {
-    right: 1rem;
 }
 button#extracard {
     right: 8rem;
@@ -55,8 +63,12 @@ h1 {
     max-width: 27rem;
 }
 .vcard button {
+    border-color: transparent;
     float: right;
-    margin: 10px 5px 0 0;
+    margin: 8px 5px 0 0;
+}
+.vcard button:hover {
+    border-color: #becdc4;
 }
 .vcard h2, .vcard input {
     padding: 0 8px;
@@ -132,27 +144,43 @@ li.contact > p {
     opacity: 0.5;
 }
 #merge {
-    max-width: 1000px;
-    padding: 16px 32px;
+    background: #f5efe9;
+    color: #3a4f4d;
+    max-width: min(90vw, 1000px);
+    padding: 0;
+}
+#merge::backdrop {
+    background: #677d76;
+    opacity: 0.9;
+}
+#merge header {
+    background: #18282b;
+    color: #f5efe9;
+}
+#merge header h2 {
+    margin: 0;
+    padding: 0.83em 32px;
 }
 #merge .compare {
     display: flex;
-    column-gap: 50px;
+    column-gap: 40px;
+    padding: 16px 32px 24px;
 }
 .compare-left, .compare-right {
     flex: 1 1 50%;
 }
 .merge-row {
     align-items: center;
+    border: 1px solid transparent;
     display: grid;
     gap: 5px 10px;
     grid-template-columns: repeat(12, 1fr);
-    margin-top: 20px;
+    margin-top: 10px;
+    padding: 5px 10px;
 }
-.merge-row-buttons {
-    grid-column: 12;
-    grid-row: 1 / span 2;
-    text-align: right;
+.merge-row:hover {
+    border-color: #becdc4;
+    border-radius: 4px;
 }
 .merge-row-name {
     font-weight: bold;
@@ -173,9 +201,10 @@ li.contact > p {
     overflow: hidden;
     padding-left: 10px;
 }
-.compare-right .merge-row-buttons {
-    grid-column: 1 / 2;
-    text-align: left;
+.merge-row-buttons {
+    grid-column: 12;
+    grid-row: 1 / span 2;
+    text-align: right;
 }
 .compare-right .merge-row-name {
     grid-column: 2 / 5;
@@ -185,4 +214,33 @@ li.contact > p {
 }
 .compare-right .merge-row-value {
     grid-column: 2 / -1;
+}
+.compare-right .merge-row-buttons {
+    grid-column: 1 / 2;
+    text-align: left;
+}
+#merge button {
+    border-radius: 100%;
+    margin: auto 5px;
+    padding: 5px 10px;
+}
+#merge button:hover {
+    color: #3a4f4d;
+}
+#merge button.close {
+    color: #954b4b;
+}
+#merge button.close:hover {
+    color: #a91616;
+}
+#merge footer {
+    border-top: 1px solid #becdc4;
+    padding: 16px 24px;
+    text-align: right;
+}
+#merge footer button {
+    border-radius: 4px;
+    color: #677d76;
+    font-family: 'Play', sans-serif;
+    padding: 4px 8px;
 }

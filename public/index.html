@@ -26,8 +26,8 @@
         <template id="vcard-column">
             <div class="vcard">
                 <input class="upload" type="file" accept="text/vcard">
-                <button class="close">x</button>
-                <button class="save" title="Save all">dl</button>
+                <button class="close">᙭</button>
+                <button class="save" title="Save all">⇝</button>
                 <h2></h2>
                 <ul class="contacts"></ul>
             </div>
@@ -37,7 +37,7 @@
             <li class="contact" draggable="true">
                 <div class="contact-header">
                     <img draggable="false" />
-                    <button class="save" title="Save vCard">dl</button>
+                    <button class="save" title="Save vCard">⇝</button>
                     <h3></h3>
                     <em></em>
                 </div>
@@ -53,12 +53,17 @@
         </template>
 
         <dialog id="merge">
-            <button class="close">Abandon Merge</button>
-            <button class="confirm">Save Changes</button>
+            <header>
+                <h2>Merging Contacts</h2>
+            </header>
             <div class="compare">
                 <div class="compare-left"></div>
                 <div class="compare-right"></div>
             </div>
+            <footer>
+                <button class="close">Abandon Merge</button>
+                <button class="confirm">Save Changes</button>
+            </footer>
         </dialog>
 
         <template id="merge-contact-detail">
