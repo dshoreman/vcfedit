@@ -120,7 +120,9 @@ export default class CardBoard {
             contacts.prepend(contactCard);
         }
 
-        delete oldCard.contacts[contactCard.id];
+        if (oldCard.id !== newCard.id) {
+            delete oldCard.contacts[contactCard.id];
+        }
     }
 
     #nearestVCard(element: HTMLElement|null): VCard {
