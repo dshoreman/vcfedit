@@ -1,7 +1,7 @@
 import Contact from "./contact";
 import * as ui from "./ui.js";
 import VCard from "./vcard";
-import {HiddenPropertyFilter} from "./vcards/properties.js";
+import {HiddenPropertyFilter, Property} from "./vcards/properties.js";
 
 export default class MergeWindow {
     contacts: {left: Contact, right: Contact};
@@ -45,7 +45,7 @@ export default class MergeWindow {
 
         this.contacts[from].moveProperty(
             this.contacts[to],
-            ui.element('.merge-row-name', row).innerText,
+            ui.element('.merge-row-name', row).innerText as Property,
             ui.element('.merge-row-value', row).innerText,
         );
 

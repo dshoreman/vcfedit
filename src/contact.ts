@@ -53,16 +53,24 @@ export default class Contact {
         return clone;
     }
 
-    moveProperty(contact: Contact, propname: string, value: string) {
+    moveProperty(contact: Contact, propname: Property, value: string) {
         const oldIndex = this.properties.findIndex(p =>
             p.name === propname && p.value.formatted === value
-        ), vCardEnd = <VCardProperty>contact.properties.pop();
+        ), property = this.properties.splice(oldIndex, 1)[0] as VCardProperty,
+        targetIndex = contact.lastPropertyIndex(propname) || contact.lastPropertyIndex(oldIndex);
+
+        if (!targetIndex) {
+            const vCardEnd = <VCardProperty>contact.properties.pop();
+
+            contact.properties.push(property, vCardEnd)
+
+            return;
+        }
 
         contact.properties = [
-            ...contact.properties.slice(0, oldIndex + 1),
-            this.properties.splice(oldIndex, 1)[0] as VCardProperty,
-            ...contact.properties.slice(oldIndex + 1),
-            vCardEnd,
+            ...contact.properties.slice(0, targetIndex + 1),
+            property,
+            ...contact.properties.slice(targetIndex + 1),
         ];
     }
 
@@ -86,6 +94,21 @@ export default class Contact {
         }
 
         return data.join('\r\n');
+    }
+
+    lastPropertyIndex(search: Property|number): number|void {
+        let index = this.properties.length;
+
+        if (typeof search === 'number')  {
+            search = this.properties[search]?.name || 0;
+        }
+        while (search && index--) {
+            if (search === this.properties[index]?.name) {
+                return index;
+            }
+        }
+
+        return;
     }
 
     vCard() {
