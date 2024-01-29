@@ -1,4 +1,5 @@
 import Contact from "./contact.js";
+import MergeWindow from "./merge.js";
 import * as ui from "./ui.js";
 import VCard from "./vcard.js";
 
@@ -88,11 +89,22 @@ export default class CardBoard {
                 event.clientY + sourceNode.offsetHeight
             )?.closest('.contact');
 
-        if (![contactBelow?.id, nextContact?.id].includes(sourceNode.id)) {
-            this.#moveContact(sourceVCard, targetVCard, contactBelow || nextContact);
+        if (contactBelow && contactBelow.id !== sourceNode.id) {
+            this.#mergeContacts(sourceVCard, targetVCard, contactBelow)
+        } else if (nextContact?.id !== sourceNode.id) {
+            this.#moveContact(sourceVCard, targetVCard, nextContact);
         }
 
         sourceNode.classList.remove('dragging');
+    }
+
+    #mergeContacts(oldCard: VCard, newCard: VCard, mergeInto: Element) {
+        const merge = new MergeWindow(
+            oldCard, <Contact>oldCard.contacts[(<HTMLElement>this.dragging).id],
+            newCard, <Contact>newCard.contacts[mergeInto.id],
+        );
+
+        merge.show();
     }
 
     #moveContact(oldCard: VCard, newCard: VCard, beforeContact?: Element|null) {
@@ -108,7 +120,9 @@ export default class CardBoard {
             contacts.prepend(contactCard);
         }
 
-        delete oldCard.contacts[contactCard.id];
+        if (oldCard.id !== newCard.id) {
+            delete oldCard.contacts[contactCard.id];
+        }
     }
 
     #nearestVCard(element: HTMLElement|null): VCard {

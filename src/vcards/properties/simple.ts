@@ -5,6 +5,7 @@ export interface ValueFormatter {
     components?: any;
     formatted: string;
     original: string;
+    toHTML(): string;
     extract(parameters: Parameter[]): string;
     export(parametersLength?: number): string;
 }
@@ -22,4 +23,5 @@ export class SimpleValue implements ValueFormatter {
 
     extract = () => decodeString(this.original, this.parameters);
     export = () => encodeString(this.formatted, this.parameters);
+    toHTML = () => this.formatted;
 }

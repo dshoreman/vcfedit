@@ -41,4 +41,6 @@ export default class NameValue implements ValueFormatter {
 
         return [c.familyNames, c.givenNames, c.otherNames, c.prefixes, c.suffixes].join(';');
     }
+
+    toHTML = () => this.formatted;
 }

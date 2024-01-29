@@ -39,4 +39,6 @@ export default class AddressValue implements ValueFormatter {
 
         return Object.values(this.components).join(';');
     }
+
+    toHTML = () => this.formatted;
 }

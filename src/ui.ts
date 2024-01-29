@@ -16,3 +16,14 @@ export const image = (selector: string, parent: Document|HTMLElement = document)
 
 export const template = (selector: string):
     HTMLTemplateElement => findOrFail(selector, document);
+
+export function applyValues(tpl: string, values: {[key: string]: string}) {
+    const clone = template(`#${tpl}`).content.cloneNode(true) as HTMLElement,
+        container = element(':first-child', clone).className;
+
+    Object.entries(values).forEach(([name, value]) => {
+        element(`.${container}-${name}`, clone).innerHTML = value;
+    });
+
+    return clone;
+}

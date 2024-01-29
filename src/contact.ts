@@ -45,6 +45,35 @@ export default class Contact {
         this.properties = properties;
     }
 
+    clone() {
+        const clone = new Contact(this.rawData, [...this.properties]);
+
+        clone.id = this.id;
+
+        return clone;
+    }
+
+    moveProperty(contact: Contact, propname: Property, value: string) {
+        const oldIndex = this.properties.findIndex(p =>
+            p.name === propname && p.value.formatted === value
+        ), property = this.properties.splice(oldIndex, 1)[0] as VCardProperty,
+        targetIndex = contact.lastPropertyIndex(propname) || contact.lastPropertyIndex(oldIndex);
+
+        if (!targetIndex) {
+            const vCardEnd = <VCardProperty>contact.properties.pop();
+
+            contact.properties.push(property, vCardEnd)
+
+            return;
+        }
+
+        contact.properties = [
+            ...contact.properties.slice(0, targetIndex + 1),
+            property,
+            ...contact.properties.slice(targetIndex + 1),
+        ];
+    }
+
     download() {
         const a = document.createElement('a'),
             data = this.export() + '\r\n';
@@ -65,6 +94,21 @@ export default class Contact {
         }
 
         return data.join('\r\n');
+    }
+
+    lastPropertyIndex(search: Property|number): number|void {
+        let index = this.properties.length;
+
+        if (typeof search === 'number')  {
+            search = this.properties[search]?.name || 0;
+        }
+        while (search && index--) {
+            if (search === this.properties[index]?.name) {
+                return index;
+            }
+        }
+
+        return;
     }
 
     vCard() {
