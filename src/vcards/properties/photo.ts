@@ -39,4 +39,12 @@ export default class PhotoValue implements ValueFormatter {
             .replace(new RegExp(`^-{${parametersLength}}`), '')
             .trim() + '\r\n';
     }
+
+    toHTML() {
+        const img = document.createElement('img');
+
+        img.src = this.formatted;
+
+        return img.outerHTML;
+    }
 }

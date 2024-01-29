@@ -22,7 +22,7 @@ export function applyValues(tpl: string, values: {[key: string]: string}) {
         container = element(':first-child', clone).className;
 
     Object.entries(values).forEach(([name, value]) => {
-        element(`.${container}-${name}`, clone).innerText = value as string;
+        element(`.${container}-${name}`, clone).innerHTML = value;
     });
 
     return clone;

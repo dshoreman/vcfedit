@@ -201,6 +201,9 @@ li.contact > p {
     overflow: hidden;
     padding-left: 10px;
 }
+.merge-row-value img {
+    max-height: 80px;
+}
 .merge-row-buttons {
     grid-column: 12;
     grid-row: 1 / span 2;

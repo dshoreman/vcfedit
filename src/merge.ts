@@ -33,7 +33,7 @@ export default class MergeWindow {
             const before = side === 'left' ? 'value' : 'name',
             row = ui.applyValues('merge-contact-detail', { name, params: parameters.map(
                 p => (p.name && p.value) ? `${p.name}=${p.value}` : p.name || p.value
-            ).join(', '), value: value.formatted });
+            ).join(', '), value: value.toHTML() });
 
             ui.element(`.merge-row-${before}`, row).before(this.#generateButtons(side));
             ui.element(`.compare-${side}`, this.dialog).appendChild(row);
