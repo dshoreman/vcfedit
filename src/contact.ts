@@ -90,9 +90,12 @@ export default class Contact {
         ui.image('img', clone).src = this.#prop(Property.photo) || PhotoValue.default();
 
         this.appendPropertiesHTML('vcard-contact-detail', ui.element('ul', clone), item => ({
-            title: item.type(),
+            icon: item.icon(),
+            type: item.type(),
             value: item.value.formatted,
-        }), null, OnlyExtraPropertiesFilter);
+        }), (row, property) => {
+            ui.element('i', row).title = property.name;
+        }, OnlyExtraPropertiesFilter);
 
         return clone;
     }
@@ -101,14 +104,14 @@ export default class Contact {
         template: string,
         parentElement: HTMLElement,
         propertyMapper: (property: VCardProperty) => {[key: string]: string},
-        beforeAppend?: ((row: HTMLElement) => void)|null,
+        beforeAppend?: ((row: HTMLElement, property: VCardProperty) => void)|null,
         filter: (value: VCardProperty, index: number, array: VCardProperty[]) => boolean = AllVisiblePropertiesFilter,
     ) {
         this.properties.filter(filter).forEach(property => {
             const row = ui.applyValues(template, propertyMapper(property));
 
             if (beforeAppend) {
-                beforeAppend(row);
+                beforeAppend(row, property);
             }
 
             parentElement.appendChild(row);

@@ -76,6 +76,17 @@ export class VCardProperty {
         return `${parameters}:${this.value.export(parameters.length + 1)}`
     }
 
+    icon(): string {
+        switch (this.name) {
+            case Property.phone: return 'call';
+            case Property.email: return 'mail';
+            case Property.orgTitle: return 'badge';
+            case Property.orgName: return 'corporate_fare';
+            case Property.url: return 'globe';
+            default: return 'question_mark';
+        }
+    }
+
     type(): string {
         return this.parameters.find(
             (p) => 'TYPE' === p.name || !p.name

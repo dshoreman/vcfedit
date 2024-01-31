@@ -119,9 +119,6 @@ li.contact.hovering::before {
 li.contact > *:not(.contact-header):not(:empty) {
     padding: 6px 6px 0;
 }
-li.contact > p {
-    margin: 0;
-}
 .contact-header {
     background-color: #3a4f4d;
     color: #f5efe9;
@@ -139,6 +136,15 @@ li.contact > p {
     height: 40px;
     margin-right: 8px;
     width: 40px;
+}
+.contact-detail {
+    text-wrap: nowrap;
+}
+.contact-detail *:not(i) {
+    vertical-align: super;
+}
+.contact-detail-type:not(:empty) {
+    margin: 0 5px;
 }
 .dragging {
     opacity: 0.5;
