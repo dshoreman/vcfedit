@@ -1,7 +1,7 @@
 import Contact from "./contact";
 import * as ui from "./ui.js";
 import VCard from "./vcard";
-import {HiddenPropertyFilter, Property} from "./vcards/properties.js";
+import {Property} from "./vcards/properties.js";
 
 export default class MergeWindow {
     contacts: {left: Contact, right: Contact};
@@ -28,16 +28,13 @@ export default class MergeWindow {
         return buttons;
     }
 
-    #generateColumnHTML = (contact: Contact, side: 'left' | 'right') =>
-        contact.properties.filter(HiddenPropertyFilter).forEach(({name, parameters, value}) => {
-            const before = side === 'left' ? 'value' : 'name',
-            row = ui.applyValues('merge-contact-detail', { name, params: parameters.map(
-                p => (p.name && p.value) ? `${p.name}=${p.value}` : p.name || p.value
-            ).join(', '), value: value.toHTML() });
-
-            ui.element(`.merge-row-${before}`, row).before(this.#generateButtons(side));
-            ui.element(`.compare-${side}`, this.dialog).appendChild(row);
-        });
+    #generateColumnHTML = (contact: Contact, side: 'left' | 'right') => contact.appendPropertiesHTML(
+        'merge-contact-detail',
+        ui.element(`.compare-${side}`, this.dialog),
+        item => ({ name: item.name, value: item.value.toHTML(), params: item.parameters.map(
+            p => (p.name && p.value) ? `${p.name}=${p.value}` : p.name || p.value
+        ).join(', ')}),
+        row => ui.element(`.merge-row-${side === 'left' ? 'value' : 'name'}`, row).before(this.#generateButtons(side)));
 
     #markForMerging(event: MouseEvent, from: 'left'|'right') {
         const row = <HTMLElement>(<HTMLElement>event.target).parentElement?.parentElement,

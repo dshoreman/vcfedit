@@ -1,36 +1,6 @@
-import {Property, VCardProperty} from "./vcards/properties.js";
+import {AllVisiblePropertiesFilter, OnlyExtraPropertiesFilter, Property, VCardProperty} from "./vcards/properties.js";
 import PhotoValue from "./vcards/properties/photo.js";
 import * as ui from "./ui.js";
-
-class ContactDetail {
-    template = ui.template('#vcard-contact-detail').content;
-    vcard: HTMLElement;
-
-    constructor(contactClone: HTMLElement) {
-        this.vcard = contactClone;
-    }
-
-    add(items: VCardProperty[]) {
-        if (!items.length) {
-            return;
-        }
-
-        for (const item of items) {
-            const elements = this.#makeNodes(item);
-
-            ui.element('ul', this.vcard).append(elements);
-        }
-    }
-
-    #makeNodes(item: VCardProperty) {
-        const clone = this.template.cloneNode(true) as HTMLElement;
-
-        ui.element('.contact-detail-title', clone).innerText = item.type();
-        ui.element('.contact-detail-value', clone).innerText = item.value.formatted;
-
-        return clone;
-    }
-}
 
 export default class Contact {
     id: string;
@@ -112,19 +82,37 @@ export default class Contact {
     }
 
     vCard() {
-        const clone = this.template.cloneNode(true) as HTMLElement,
-            sections = new ContactDetail(clone);
+        const clone = this.template.cloneNode(true) as HTMLElement;
 
         ui.element('.contact', clone).id = this.id;
         ui.element('h3', clone).innerText = this.#displayAs();
         ui.element('em', clone).innerText = this.#displayOrg();
         ui.image('img', clone).src = this.#prop(Property.photo) || PhotoValue.default();
 
-        sections.add(this.#props(Property.phone));
-        sections.add(this.#props(Property.address));
-        sections.add(this.#props(Property.email));
+        this.appendPropertiesHTML('vcard-contact-detail', ui.element('ul', clone), item => ({
+            title: item.type(),
+            value: item.value.formatted,
+        }), null, OnlyExtraPropertiesFilter);
 
         return clone;
+    }
+
+    appendPropertiesHTML(
+        template: string,
+        parentElement: HTMLElement,
+        propertyMapper: (property: VCardProperty) => {[key: string]: string},
+        beforeAppend?: ((row: HTMLElement) => void)|null,
+        filter: (value: VCardProperty, index: number, array: VCardProperty[]) => boolean = AllVisiblePropertiesFilter,
+    ) {
+        this.properties.filter(filter).forEach(property => {
+            const row = ui.applyValues(template, propertyMapper(property));
+
+            if (beforeAppend) {
+                beforeAppend(row);
+            }
+
+            parentElement.appendChild(row);
+        });
     }
 
     #displayAs() {
