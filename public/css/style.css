@@ -144,6 +144,12 @@ li.contact.hovering::before {
     margin-right: 8px;
     width: 40px;
 }
+.contact-header button:not(.expand) {
+    display: none;
+}
+.contact-header:hover button {
+    display: inline-block;
+}
 .contact-header button i {
     font-size: 20px;
     padding-top: 2px;
