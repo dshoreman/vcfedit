@@ -150,6 +150,9 @@ li.contact.hovering::before {
 .contact-header:hover button {
     display: inline-block;
 }
+.contact-header:hover button.expand {
+    color: #f5efe9;
+}
 .contact-header button i {
     font-size: 20px;
     padding-top: 2px;

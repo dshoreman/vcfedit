@@ -23,9 +23,9 @@ export default class VCard {
             const contact = this.#contactFromVCard(vCard[0]),
                 contactCard = contact.vCard();
 
-            ui.element('.expand', contactCard).onclick = (e) => this.#toggleContactDetails(e);
-            ui.element('.save', contactCard).onclick = () => contact.download();
-            ui.element('.remove', contactCard).onclick = () => this.#removeContact(contact);
+            ui.element('.contact-header', contactCard).onclick = (e) => this.#toggleContactDetails(e);
+            ui.element('.save', contactCard).onclick = (e) => contact.download(e);
+            ui.element('.remove', contactCard).onclick = (e) => this.#removeContact(contact, e);
 
             ui.element('.contacts', this.column).append(contactCard);
             this.contacts[contact.id] = contact;
@@ -58,7 +58,9 @@ export default class VCard {
         ui.element(`#${contact.id}`, this.column).replaceWith(contact.vCard());
     }
 
-    #removeContact(contact: Contact) {
+    #removeContact(contact: Contact, event: Event) {
+        event.stopPropagation();
+
         ui.element(`#${contact.id}`, this.column).remove();
 
         delete this.contacts[contact.id];

@@ -44,9 +44,11 @@ export default class Contact {
         ];
     }
 
-    download() {
+    download(event: Event) {
         const a = document.createElement('a'),
             data = this.export() + '\r\n';
+
+        event.stopPropagation();
 
         a.setAttribute('download', `${this.#displayPrimary().replace(' ', '-').toLowerCase()}.vcf`);
         a.setAttribute('href', `data:text/plain;charset=utf-8,${encodeURIComponent(data)}`);
