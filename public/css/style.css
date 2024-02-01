@@ -107,7 +107,7 @@ li.contact {
     list-style: none;
     margin: 0 0 1vw;
     overflow: auto;
-    padding: 0 0 1vh;
+    padding: 0;
 }
 li.contact.hovering {
     margin: 4vh 0 1vh;
@@ -120,9 +120,6 @@ li.contact.hovering::before {
     position: absolute;
     margin-left: -0.9rem;
     margin-top: -2.5rem;
-}
-li.contact > *:not(.contact-header):not(:empty) {
-    padding: 6px 6px 0;
 }
 .contact-header {
     background-color: #3a4f4d;
@@ -150,6 +147,9 @@ li.contact > *:not(.contact-header):not(:empty) {
 .contact-header button i {
     font-size: 20px;
     padding-top: 2px;
+}
+li.contact ul {
+    padding: 6px 6px 1vh;
 }
 li.contact ul.hidden {
     display: none;
