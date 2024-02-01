@@ -23,7 +23,9 @@ button:hover {
 button#extracard, button#emptycard {
     background-color: #18282b;
     font-family: 'Play', sans-serif;
-    padding: 0.5rem 1rem;
+    font-size: 16px;
+    font-weight: normal;
+    padding: 0.5rem 1rem 0.5rem 0.3rem;
     position: absolute;
     right: 1rem;
     top: 0.6rem;
@@ -32,8 +34,13 @@ button#extracard:hover, button#emptycard:hover {
     background: #3a4f4d;
     color: #f5efe9;
 }
+button#extracard i, button#emptycard i {
+    font-size: 20px;
+    padding: 0 0.2rem;
+    vertical-align: text-bottom;
+}
 button#extracard {
-    right: 8rem;
+    right: 8.8rem;
 }
 #new-file {
     top: 3rem;
@@ -65,10 +72,8 @@ h1 {
 .vcard button {
     border-color: transparent;
     float: right;
-    margin: 8px 5px 0 0;
-}
-.vcard button:hover {
-    border-color: #becdc4;
+    margin: 4px 2px 0 0;
+    padding: 2px 2px 0;
 }
 .vcard h2, .vcard input {
     padding: 0 8px;
@@ -136,6 +141,10 @@ li.contact > *:not(.contact-header):not(:empty) {
     height: 40px;
     margin-right: 8px;
     width: 40px;
+}
+.contact-header button i {
+    font-size: 20px;
+    padding-top: 2px;
 }
 .contact-detail {
     text-wrap: nowrap;

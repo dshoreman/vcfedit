@@ -13,8 +13,12 @@
     <body>
         <h1>vCard Editor</h1>
 
-        <button id="extracard">➫ Add vCard</button>
-        <button id="emptycard" popovertarget="new-file">✚ New File</button>
+        <button id="extracard">
+            <i class="material-symbols-outlined">upload_file</i> Add vCard
+        </button>
+        <button id="emptycard" popovertarget="new-file">
+            <i class="material-symbols-outlined">add</i> New File
+        </button>
         <div id="new-file" popover anchor="emptycard">
             <form id="new-file-form">
                 <input type="text" placeholder="Contacts.vcf" autofocus>
@@ -27,8 +31,8 @@
         <template id="vcard-column">
             <div class="vcard">
                 <input class="upload" type="file" accept="text/vcard">
-                <button class="close">᙭</button>
-                <button class="save" title="Save all">⇝</button>
+                <button class="close"><i class="material-symbols-outlined">close</i></button>
+                <button class="save" title="Save all"><i class="material-symbols-outlined">download</i></button>
                 <h2></h2>
                 <ul class="contacts"></ul>
             </div>
@@ -38,7 +42,9 @@
             <li class="contact" draggable="true">
                 <div class="contact-header">
                     <img draggable="false" />
-                    <button class="save" title="Save vCard">⇝</button>
+                    <button class="save" title="Save vCard">
+                        <i class="material-symbols-outlined">download</i>
+                    </button>
                     <h3></h3>
                     <em></em>
                 </div>
