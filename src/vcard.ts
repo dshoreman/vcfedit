@@ -65,9 +65,12 @@ export default class VCard {
     }
 
     #toggleContactDetails(event: Event) {
-        const contactCard = (<HTMLElement>event.target).closest('.contact') as HTMLElement;
+        const contactCard = (<HTMLElement>event.target).closest('.contact') as HTMLElement,
+            icon = ui.element('i', contactCard);
 
         ui.element('ul', contactCard).classList.toggle('hidden');
+
+        icon.innerText = `expand_${'expand_more' === icon.innerText ? 'less' : 'more'}`;
     }
 
     #contactFromVCard(vCard: string): Contact {
