@@ -146,8 +146,4 @@ export default class Contact {
     #prop(property: Property): string {
         return this.properties.find((p) => p.name === property)?.value.formatted || '';
     }
-
-    #props(property: Property) {
-        return this.properties.filter((p) => p.name === property);
-    }
 };

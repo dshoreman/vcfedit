@@ -3,6 +3,11 @@ import NameValue from "./properties/name.js";
 import PhotoValue from "./properties/photo.js";
 import {SimpleValue, ValueFormatter} from "./properties/simple.js";
 
+export type Parameter = {
+    name: string,
+    value: string,
+};
+
 export enum Property {
     begin = 'BEGIN', end = 'END', source =  'SOURCE', kind = 'KIND', xml = 'XML',   // General Properties
     formattedName = 'FN', name = 'N', nickname = 'NICKNAME', photo = 'PHOTO',       // Identification Properties
@@ -16,11 +21,6 @@ export enum Property {
         sound = 'SOUND', uid = 'UID', pidmap = 'CLIENTPIDMAP', url = 'URL', version = 'VERSION',    //   ...
     key = 'KEY',                                                                    // Security Properties
     busyUrl = 'FBURL', calUserUri = 'CALADRURI', calUri = 'CALURI',                 // Calendar Properties
-};
-
-export type Parameter = {
-    name: string,
-    value: string,
 };
 
 export const AllVisiblePropertiesFilter = (p: VCardProperty) =>
@@ -43,6 +43,7 @@ export class VCardProperty {
     name: Property;
     components?: string[];
     parameters: Parameter[];
+    paramString: string;
     value: ValueFormatter;
 
     constructor(folded: string, unfolded: string) {
@@ -55,6 +56,9 @@ export class VCardProperty {
 
         this.name = property;
         this.parameters = rawParams.map(parameterParser);
+        this.paramString = this.parameters.map(
+            p => (p.name && p.value) ? `${p.name}=${p.value}` : p.name || p.value
+        ).join(', ');
 
         switch (property) {
             case 'N': this.value = new NameValue(value, this.parameters); break;
