@@ -16,7 +16,7 @@ export default class CardBoard {
             id = 'vcard-' + Date.now().toString().slice(-7);
 
         this.cardCount += 1;
-        ui.element('button.close', clone).onclick = this.removeCardColumn;
+        ui.element('button.close', clone).onclick = () => this.removeCardColumn(id);
         ui.element('button.save', clone).onclick = () => this.downloadCard(id);
         ui.element('input.upload', clone).onchange = (ev) => this.loadVCardFile(ev);
         ui.element('.contacts', clone).addEventListener('dragstart', ev => this.#handleDragStart(ev));
@@ -146,10 +146,16 @@ export default class CardBoard {
         }
     }
 
-    removeCardColumn(event: Event) {
-        const parent = (<HTMLElement>(<HTMLElement>event.target).parentNode)
+    removeCardColumn(vCardID: string) {
+        const card = this.vCards[vCardID];
 
-        parent.outerHTML = '';
+        if (!card) {
+            throw new Error(`Card '${vCardID}' not found.`);
+        }
+
+        card.column.remove();
+
+        delete this.vCards[vCardID];
     }
 
     loadVCardFile(event: Event) {
