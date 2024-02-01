@@ -34,7 +34,10 @@ export default class MergeWindow {
         item => ({ name: item.name, value: item.value.toHTML(), params: item.parameters.map(
             p => (p.name && p.value) ? `${p.name}=${p.value}` : p.name || p.value
         ).join(', ')}),
-        row => ui.element(`.merge-row-${side === 'left' ? 'value' : 'name'}`, row).before(this.#generateButtons(side)));
+        (row, property) => {
+            ui.element('.merge-row-name', row).prepend(property.icon());
+            ui.element(`.merge-row-${side === 'left' ? 'value' : 'name'}`, row).before(this.#generateButtons(side));
+        });
 
     #markForMerging(event: MouseEvent, from: 'left'|'right') {
         const row = <HTMLElement>(<HTMLElement>event.target).parentElement?.parentElement,

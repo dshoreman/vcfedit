@@ -76,8 +76,22 @@ export class VCardProperty {
         return `${parameters}:${this.value.export(parameters.length + 1)}`
     }
 
-    icon(): string {
+    icon() {
+        const i = document.createElement('i');
+
+        i.className = 'material-symbols-outlined';
+        i.innerText = this.iconName();
+
+        return i;
+    }
+
+    iconName(): string {
         switch (this.name) {
+            case Property.name:
+            case Property.formattedName:
+                return 'person';
+            case Property.photo:
+                return 'image';
             case Property.phone: return 'call';
             case Property.email: return 'mail';
             case Property.orgTitle: return 'badge';

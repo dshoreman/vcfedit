@@ -90,7 +90,7 @@ export default class Contact {
         ui.image('img', clone).src = this.#prop(Property.photo) || PhotoValue.default();
 
         this.appendPropertiesHTML('vcard-contact-detail', ui.element('ul', clone), item => ({
-            icon: item.icon(),
+            icon: item.iconName(),
             type: item.type(),
             value: item.value.formatted,
         }), (row, property) => {
