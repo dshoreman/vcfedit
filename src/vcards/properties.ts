@@ -23,6 +23,17 @@ export enum Property {
     busyUrl = 'FBURL', calUserUri = 'CALADRURI', calUri = 'CALURI',                 // Calendar Properties
 };
 
+const PropertyData: {[key in Property]?: {name: string, icon: string}} = {
+    [Property.name]: {name: 'Name', icon: 'person'},
+    [Property.formattedName]: {name: 'Name', icon: 'person'},
+    [Property.photo]: {name: 'Photo', icon: 'image'},
+    [Property.phone]: {name: 'Phone', icon: 'call'},
+    [Property.email]: {name: 'Email Address', icon: 'mail'},
+    [Property.orgTitle]: {name: 'Position', icon: 'badge'},
+    [Property.orgName]: {name: 'Company', icon: 'corporate_fare'},
+    [Property.url]: {name: 'Public URL', icon: 'globe'},
+}
+
 export const AllVisiblePropertiesFilter = (p: VCardProperty) =>
     ![Property.begin, Property.end, Property.version].includes(p.name);
 export const OnlyExtraPropertiesFilter = (p: VCardProperty) =>
@@ -40,6 +51,8 @@ export function parameterParser(parameter: string) {
 }
 
 export class VCardProperty {
+    human: string;
+    icon: string;
     name: Property;
     components?: string[];
     parameters: Parameter[];
@@ -55,6 +68,9 @@ export class VCardProperty {
         }
 
         this.name = property;
+        this.human = PropertyData[property]?.name || property;
+        this.icon = PropertyData[property]?.icon || 'question_mark';
+
         this.parameters = rawParams.map(parameterParser);
         this.paramString = this.parameters.map(
             p => (p.name && p.value) ? `${p.name}=${p.value}` : p.name || p.value
@@ -78,31 +94,6 @@ export class VCardProperty {
         })].join(';');
 
         return `${parameters}:${this.value.export(parameters.length + 1)}`
-    }
-
-    icon() {
-        const i = document.createElement('i');
-
-        i.className = 'material-symbols-outlined';
-        i.innerText = this.iconName();
-
-        return i;
-    }
-
-    iconName(): string {
-        switch (this.name) {
-            case Property.name:
-            case Property.formattedName:
-                return 'person';
-            case Property.photo:
-                return 'image';
-            case Property.phone: return 'call';
-            case Property.email: return 'mail';
-            case Property.orgTitle: return 'badge';
-            case Property.orgName: return 'corporate_fare';
-            case Property.url: return 'globe';
-            default: return 'question_mark';
-        }
     }
 
     type(): string {

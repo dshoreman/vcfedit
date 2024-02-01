@@ -22,6 +22,15 @@ function findOrFail(selector: string, parent: Document|HTMLElement): any {
     return el
 }
 
+export function icon(name: string): HTMLElement {
+    const i = document.createElement('i');
+
+    i.className = 'material-symbols-outlined';
+    i.innerText = name;
+
+    return i;
+}
+
 export const image = (selector: string, parent: Document|HTMLElement = document):
     HTMLImageElement => findOrFail(selector, parent);
 

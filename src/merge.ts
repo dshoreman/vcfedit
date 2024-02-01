@@ -31,9 +31,9 @@ export default class MergeWindow {
     #generateColumnHTML = (contact: Contact, side: 'left' | 'right') => contact.appendPropertiesHTML(
         'merge-contact-detail',
         ui.element(`.compare-${side}`, this.dialog),
-        item => ({name: item.name, value: item.value.toHTML(), params: item.paramString}),
+        item => ({name: item.human, value: item.value.toHTML(), params: item.paramString}),
         (row, property) => {
-            ui.element('.merge-row-name', row).prepend(property.icon());
+            ui.element('.merge-row-name', row).prepend(ui.icon(property.icon));
             ui.element(`.merge-row-${side === 'left' ? 'value' : 'name'}`, row).before(this.#generateButtons(side));
         });
 
