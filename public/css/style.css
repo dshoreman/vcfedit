@@ -135,6 +135,11 @@ li.contact > *:not(.contact-header):not(:empty) {
     overflow: hidden;
     text-overflow: ellipsis;
 }
+.contact-header em {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
 .contact-header img {
     border-radius: 4px;
     float: left;
