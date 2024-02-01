@@ -24,6 +24,7 @@ export default class VCard {
                 contactCard = contact.vCard();
 
             ui.element('.save', contactCard).onclick = () => contact.download();
+            ui.element('.remove', contactCard).onclick = () => this.#removeContact(contact);
 
             ui.element('.contacts', this.column).append(contactCard);
             this.contacts[contact.id] = contact;
@@ -54,6 +55,12 @@ export default class VCard {
         this.contacts[contact.id] = contact;
 
         ui.element(`#${contact.id}`, this.column).replaceWith(contact.vCard());
+    }
+
+    #removeContact(contact: Contact) {
+        ui.element(`#${contact.id}`, this.column).remove();
+
+        delete this.contacts[contact.id];
     }
 
     #contactFromVCard(vCard: string): Contact {

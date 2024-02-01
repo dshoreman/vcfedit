@@ -16,7 +16,7 @@ Run `npx http-server` in the source dir and head to localhost:8080.
 * [x] Rearrange contacts in the cards
 * [x] Drag and drop to move contacts between vCards
   * [ ] Hold shift/alt to create a copy instead
-* [ ] Remove contacts
+* [x] Remove contacts
 * [ ] **Tools:**
   * [x] Export and download VCF file
     * [ ] Format as latest/custom version of vCard format
