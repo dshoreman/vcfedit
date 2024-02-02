@@ -3,10 +3,16 @@ import MergeWindow from "./merge.js";
 import * as ui from "./ui.js";
 import VCard from "./vcard.js";
 
+function assertIsDefined<T>(value: T): asserts value is NonNullable<T> {
+    if (value === undefined || value === null) {
+        throw new Error(`Expected value to be set, but got '${value}'.`);
+    }
+}
+
 export default class CardBoard {
     cardBoard = ui.element('#vcards');
     cardCount = 0;
-    dragging: HTMLElement|null = null;
+    dragging: {card: VCard, contact: HTMLElement}|null = null;
     template = ui.template('#vcard-column').content;
     vCards: {[key: string]: VCard} = {};
 
@@ -46,7 +52,7 @@ export default class CardBoard {
     #handleDragStart(event: DragEvent) {
         const target = <HTMLElement>event.target;
 
-        this.dragging = target;
+        this.dragging = {card: this.#nearestVCard(target), contact: target};
 
         target.classList.add('dragging');
     }
@@ -58,9 +64,15 @@ export default class CardBoard {
     }
 
     #handleDragEnter(event: DragEvent) {
-        const d = <HTMLElement>this.dragging,
-            t: HTMLElement|null = (<HTMLElement>event.target).closest('.contact');
+        assertIsDefined(this.dragging);
 
+        const d = this.dragging.contact,
+            t: HTMLElement|null = (<HTMLElement>event.target).closest('.contact'),
+            card = this.#nearestVCard(event.target as HTMLElement);
+
+        if (card && !t && card !== this.dragging.card) {
+            ui.element('.contacts', card.column).append(d);
+        }
         if (!t || t.offsetTop === d.offsetTop) {
             return;
         }
@@ -69,21 +81,26 @@ export default class CardBoard {
     }
 
     #handleDrop(event: DragEvent) {
-        const t: HTMLElement|null = (<HTMLElement>event.target).closest('.contact'),
-            [newCard, oldCard] = [this.#nearestVCard(t), this.#nearestVCard(this.dragging)];
+        assertIsDefined(this.dragging);
 
-        if (t && t === this.dragging) {
+        const target: HTMLElement = <HTMLElement>event.target,
+            [oldCard, newCard] = [this.dragging.card, this.#nearestVCard(target)],
+            contact = target.closest('.contact');
+
+        if (contact && contact !== this.dragging.contact) {
+            this.#mergeContacts(oldCard, newCard, contact);
+        } else if (contact || oldCard !== newCard) {
             this.#moveContact(oldCard, newCard);
-        } else if (t) {
-            this.#mergeContacts(oldCard, newCard, t);
         }
 
-        this.dragging?.classList.remove('dragging');
+        this.dragging.contact.classList.remove('dragging');
     }
 
     #mergeContacts(oldCard: VCard, newCard: VCard, mergeInto: Element) {
+        assertIsDefined(this.dragging);
+
         const merge = new MergeWindow(
-            oldCard, <Contact>oldCard.contacts[(<HTMLElement>this.dragging).id],
+            oldCard, <Contact>oldCard.contacts[(this.dragging.contact).id],
             newCard, <Contact>newCard.contacts[mergeInto.id],
         );
 
@@ -91,7 +108,9 @@ export default class CardBoard {
     }
 
     #moveContact(oldCard: VCard, newCard: VCard) {
-        const contact = oldCard.contacts[(<HTMLElement>this.dragging).id];
+        assertIsDefined(this.dragging);
+
+        const contact = oldCard.contacts[this.dragging.contact.id];
 
         if (!contact || oldCard.id === newCard.id) {
             return;
