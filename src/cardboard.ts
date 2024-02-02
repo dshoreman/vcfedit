@@ -7,7 +7,6 @@ export default class CardBoard {
     cardBoard = ui.element('#vcards');
     cardCount = 0;
     dragging: HTMLElement|null = null;
-    lastHovered: HTMLElement|null = null;
     template = ui.template('#vcard-column').content;
     vCards: {[key: string]: VCard} = {};
 
@@ -70,22 +69,16 @@ export default class CardBoard {
     }
 
     #handleDrop(event: DragEvent) {
-        const sourceNode = <HTMLElement>this.dragging,
-            sourceVCard = this.#nearestVCard(sourceNode),
-            targetVCard = this.#nearestVCard(event.target as HTMLElement),
-            contactBelow = document.elementFromPoint(event.clientX, event.clientY)?.closest('.contact'),
-            nextContact = document.elementFromPoint(
-                event.clientX,
-                event.clientY + sourceNode.offsetHeight
-            )?.closest('.contact');
+        const t: HTMLElement|null = (<HTMLElement>event.target).closest('.contact'),
+            [newCard, oldCard] = [this.#nearestVCard(t), this.#nearestVCard(this.dragging)];
 
-        if (contactBelow && contactBelow.id !== sourceNode.id) {
-            this.#mergeContacts(sourceVCard, targetVCard, contactBelow)
-        } else if (nextContact?.id !== sourceNode.id) {
-            this.#moveContact(sourceVCard, targetVCard, nextContact);
+        if (t && t === this.dragging) {
+            this.#moveContact(oldCard, newCard);
+        } else if (t) {
+            this.#mergeContacts(oldCard, newCard, t);
         }
 
-        sourceNode.classList.remove('dragging');
+        this.dragging?.classList.remove('dragging');
     }
 
     #mergeContacts(oldCard: VCard, newCard: VCard, mergeInto: Element) {
@@ -97,22 +90,16 @@ export default class CardBoard {
         merge.show();
     }
 
-    #moveContact(oldCard: VCard, newCard: VCard, beforeContact?: Element|null) {
-        const contactCard = <HTMLElement>this.dragging,
-            contacts = ui.element('.contacts', newCard.column);
+    #moveContact(oldCard: VCard, newCard: VCard) {
+        const contact = oldCard.contacts[(<HTMLElement>this.dragging).id];
 
-        newCard.contacts[contactCard.id] = <Contact>oldCard.contacts[contactCard.id],
-
-        ui.element('.contacts', oldCard.column).removeChild(contactCard);
-        if (beforeContact) {
-            contacts.insertBefore(contactCard, beforeContact);
-        } else {
-            contacts.prepend(contactCard);
+        if (!contact || oldCard.id === newCard.id) {
+            return;
         }
 
-        if (oldCard.id !== newCard.id) {
-            delete oldCard.contacts[contactCard.id];
-        }
+        newCard.contacts[contact.id] = contact;
+
+        delete oldCard.contacts[contact.id];
     }
 
     #nearestVCard(element: HTMLElement|null): VCard {
