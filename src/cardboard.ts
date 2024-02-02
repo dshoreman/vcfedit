@@ -21,7 +21,8 @@ export default class CardBoard {
         ui.element('input.upload', clone).onchange = (ev) => this.loadVCardFile(ev);
         ui.element('.contacts', clone).addEventListener('dragstart', ev => this.#handleDragStart(ev));
         ui.element('.contacts', clone).addEventListener('dragend', ev => this.#handleDragEnd(ev));
-        ui.element('.vcard', clone).addEventListener('dragover', ev => this.#handleDragOver(ev), false);
+        ui.element('.vcard', clone).addEventListener('dragenter', ev => this.#handleDragEnter(ev));
+        ui.element('.vcard', clone).addEventListener('dragover', ev => ev.preventDefault(), false);
         ui.element('.vcard', clone).addEventListener('drop', ev => this.#handleDrop(ev));
         ui.element('.vcard', clone).id = id;
 
@@ -54,29 +55,18 @@ export default class CardBoard {
     #handleDragEnd(event: DragEvent) {
         (<HTMLElement>event.target).classList.remove('dragging');
 
-        this.#resetHover();
         this.dragging = null;
     }
 
-    #handleDragOver(event: DragEvent) {
-        const hovering = document.elementFromPoint(event.clientX, event.clientY),
-            contact = <HTMLElement|null>hovering?.closest('.contact');
+    #handleDragEnter(event: DragEvent) {
+        const d = <HTMLElement>this.dragging,
+            t: HTMLElement|null = (<HTMLElement>event.target).closest('.contact');
 
-        event.preventDefault();
-
-        if (contact) {
-            this.#resetHover();
-            this.lastHovered = contact;
-        }
-        if (!contact || !this.dragging || [
-            contact.id,
-            contact.previousElementSibling?.id,
-        ].includes(this.dragging.id)) {
+        if (!t || t.offsetTop === d.offsetTop) {
             return;
         }
 
-        contact.classList.add('hovering');
-        contact.style.marginTop = `calc(${this.dragging.offsetHeight}px + 2vh)`;
+        t.offsetTop > d.offsetTop ? t.before(d) : t.after(d);
     }
 
     #handleDrop(event: DragEvent) {
@@ -135,15 +125,6 @@ export default class CardBoard {
         }
 
         return <VCard>this.vCards[element.id];
-    }
-
-    #resetHover() {
-        const wasHovering = <HTMLElement|null>document.querySelector('.hovering');
-
-        if (wasHovering) {
-            wasHovering.style.marginTop = '1vh';
-            wasHovering.classList.remove('hovering');
-        }
     }
 
     removeCardColumn(vCardID: string) {
