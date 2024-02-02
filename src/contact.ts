@@ -44,11 +44,13 @@ export default class Contact {
         ];
     }
 
-    download() {
+    download(event: Event) {
         const a = document.createElement('a'),
             data = this.export() + '\r\n';
 
-        a.setAttribute('download', `${this.#displayAs().replace(' ', '-').toLowerCase()}.vcf`);
+        event.stopPropagation();
+
+        a.setAttribute('download', `${this.#displayPrimary().replace(' ', '-').toLowerCase()}.vcf`);
         a.setAttribute('href', `data:text/plain;charset=utf-8,${encodeURIComponent(data)}`);
         a.style.display = 'none';
 
@@ -82,11 +84,12 @@ export default class Contact {
     }
 
     vCard() {
-        const clone = this.template.cloneNode(true) as HTMLElement;
+        const clone = this.template.cloneNode(true) as HTMLElement,
+            displayAs = this.#displayPrimary();
 
         ui.element('.contact', clone).id = this.id;
-        ui.element('h3', clone).innerText = this.#displayAs();
-        ui.element('em', clone).innerText = this.#displayOrg();
+        ui.element('h3', clone).innerText = displayAs;
+        ui.element('em', clone).innerText = this.#displaySecondary(displayAs);
         ui.image('img', clone).src = this.#prop(Property.photo) || PhotoValue.default();
 
         this.appendPropertiesHTML('vcard-contact-detail', ui.element('ul', clone), item => ({
@@ -118,7 +121,7 @@ export default class Contact {
         });
     }
 
-    #displayAs() {
+    #displayPrimary() {
         const n = this.#prop(Property.name),
             fn = this.#prop(Property.formattedName);
 
@@ -132,15 +135,30 @@ export default class Contact {
         return this.#prop(Property.email) || 'Unknown';
     }
 
-    #displayOrg() {
-        const title = this.#prop(Property.orgTitle),
-            organisation = this.#prop(Property.orgName);
+    #displaySecondary(primary: string) {
+        const [email, phone, title, organisation] = [
+            this.#prop(Property.email),
+            this.#prop(Property.phone),
+            this.#prop(Property.orgTitle),
+            this.#prop(Property.orgName),
+        ];
 
+        if (phone) {
+            return phone;
+        }
+        if (email && primary !== email) {
+            return email;
+        }
         if (organisation && title) {
             return `${title}, ${organisation}`;
         }
+        if (organisation || title) {
+            return organisation || title;
+        }
 
-        return organisation || title;
+        return this.properties.filter(OnlyExtraPropertiesFilter).filter(
+            p => p.value.formatted !== primary
+        )[0]?.value.formatted || '';
     }
 
     #prop(property: Property): string {

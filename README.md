@@ -12,7 +12,7 @@ Run `npx http-server` in the source dir and head to localhost:8080.
 ### vCards
 * [ ] Add new contact
 * [x] Show contact summaries
-  * [ ] Expand to show all properties
+  * [x] Expand to show all properties
 * [x] Rearrange contacts in the cards
 * [x] Drag and drop to move contacts between vCards
   * [ ] Hold shift/alt to create a copy instead
