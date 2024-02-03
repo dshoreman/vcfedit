@@ -9,10 +9,12 @@ function assertIsDefined<T>(value: T): asserts value is NonNullable<T> {
     }
 }
 
+type DragData = {card: VCard, contact: HTMLElement, didDrag: boolean, origin: ChildNode|null};
+
 export default class CardBoard {
     cardBoard = ui.element('#vcards');
     cardCount = 0;
-    dragging: {card: VCard, contact: HTMLElement}|null = null;
+    dragging: DragData|null = null;
     template = ui.template('#vcard-column').content;
     vCards: {[key: string]: VCard} = {};
 
@@ -50,14 +52,19 @@ export default class CardBoard {
     }
 
     #handleDragStart(event: DragEvent) {
-        const target = <HTMLElement>event.target;
+        const contact = <HTMLElement>event.target,
+            origin = contact.nextElementSibling || contact.previousElementSibling || null;
 
-        this.dragging = {card: this.#nearestVCard(target), contact: target};
+        this.dragging = {card: this.#nearestVCard(contact), contact, didDrag: false, origin};
 
-        target.classList.add('dragging');
+        contact.classList.add('dragging');
     }
 
     #handleDragEnd(event: DragEvent) {
+        if (this.dragging?.origin && !this.dragging.didDrag) {
+            this.dragging.origin.before(this.dragging.contact);
+        }
+
         (<HTMLElement>event.target).classList.remove('dragging');
 
         this.dragging = null;
@@ -91,9 +98,11 @@ export default class CardBoard {
             this.#mergeContacts(oldCard, newCard, contact);
         } else if (contact || oldCard !== newCard) {
             this.#moveContact(oldCard, newCard);
+        } else {
+            return;
         }
 
-        this.dragging.contact.classList.remove('dragging');
+        this.dragging.didDrag = true;
     }
 
     #mergeContacts(oldCard: VCard, newCard: VCard, mergeInto: Element) {
