@@ -9,6 +9,25 @@ export function applyValues(tpl: string, values: {[key: string]: string}) {
     return clone;
 }
 
+// Find the closest `selector` (contained within `parent`?) to the position of `MouseEvent`.
+export function closest(selector: string, {clientX, clientY}: MouseEvent, parent?: Element): HTMLElement|null {
+    let closest = null, closestDistance = Infinity;
+
+    (parent || document).querySelectorAll(selector).forEach(element => {
+        const rect = element.getBoundingClientRect(),
+            // (cursorX - elCentreX)² + (cursorY - elCentreY)²
+            distanceSquared = Math.pow(clientX - (rect.left + rect.width / 2), 2) +
+                Math.pow(clientY - (rect.top + rect.height / 2), 2);
+
+        if (distanceSquared < closestDistance) {
+            closestDistance = distanceSquared;
+            closest = element;
+        }
+    });
+
+    return closest;
+}
+
 export const element = (selector: string, parent: Document|HTMLElement = document):
     HTMLElement => findOrFail(selector, parent);
 

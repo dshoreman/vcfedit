@@ -53,7 +53,7 @@ export default class CardBoard {
 
     #handleDragStart(event: DragEvent) {
         const contact = <HTMLElement>event.target,
-            origin = contact.nextElementSibling || contact.previousElementSibling || null;
+            origin = contact.nextElementSibling || contact.previousElementSibling;
 
         this.dragging = {card: this.#nearestVCard(contact), contact, didMove: false, origin};
 
@@ -78,7 +78,9 @@ export default class CardBoard {
             card = this.#nearestVCard(event.target as HTMLElement);
 
         if (card && !t && card !== this.dragging.card) {
-            ui.element('.contacts', card.column).append(d);
+            const closest = ui.closest('.contact', event, card.column);
+
+            closest ? closest.after(d) : ui.element('.contacts', card.column).append(d);
         }
         if (!t || t.offsetTop === d.offsetTop) {
             return;
