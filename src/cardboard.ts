@@ -94,11 +94,11 @@ export default class CardBoard {
             [oldCard, newCard] = [this.dragging.card, this.#nearestVCard(target)],
             contact = target.closest('.contact');
 
-        if (contact && contact !== this.dragging.contact) {
-            this.#mergeContacts(oldCard, newCard, contact);
-        } else if (contact || oldCard !== newCard) {
-            this.#moveContact(oldCard, newCard);
+        if (!contact || contact === this.dragging.contact) {
+            return this.#moveContact(oldCard, newCard);
         }
+
+        this.#mergeContacts(oldCard, newCard, contact);
     }
 
     #mergeContacts(oldCard: VCard, newCard: VCard, mergeInto: Element) {
