@@ -11,6 +11,8 @@ function assertIsDefined<T>(value: T): asserts value is NonNullable<T> {
 
 type DragData = {card: VCard, contact: HTMLElement, didMove: boolean, origin: ChildNode|null};
 
+type TargettedDragEvent = DragEvent & {target: HTMLElement};
+
 export default class CardBoard {
     cardBoard = ui.element('#vcards');
     cardCount = 0;
@@ -26,12 +28,10 @@ export default class CardBoard {
         ui.element('button.close', clone).onclick = () => this.removeCardColumn(id);
         ui.element('button.save', clone).onclick = () => this.downloadCard(id);
         ui.element('input.upload', clone).onchange = (ev) => this.loadVCardFile(ev);
-        ui.element('.contacts', clone).addEventListener('dragstart', ev => this.#handleDragStart(ev));
-        ui.element('.contacts', clone).addEventListener('dragend', ev => this.#handleDragEnd(ev));
-        ui.element('.vcard', clone).addEventListener('dragenter', ev =>
-            this.#handleDragEnter(ev as DragEvent & {target: HTMLElement}));
-        ui.element('.vcard', clone).addEventListener('dragover', ev =>
-            this.#handleDragOver(ev as DragEvent & {target: HTMLElement}));
+        ui.element('.contacts', clone).addEventListener('dragstart', e => this.#handleDragStart(<TargettedDragEvent>e));
+        ui.element('.contacts', clone).addEventListener('dragend', e => this.#handleDragEnd(<TargettedDragEvent>e));
+        ui.element('.vcard', clone).addEventListener('dragenter', e => this.#handleDragEnter(<TargettedDragEvent>e));
+        ui.element('.vcard', clone).addEventListener('dragover', e => this.#handleDragOver(<TargettedDragEvent>e));
         ui.element('.vcard', clone).addEventListener('drop', ev => this.#handleDrop(ev));
         ui.element('.vcard', clone).id = id;
 
@@ -53,8 +53,8 @@ export default class CardBoard {
         card.download();
     }
 
-    #handleDragStart(event: DragEvent) {
-        const contact = <HTMLElement>event.target,
+    #handleDragStart(event: TargettedDragEvent) {
+        const contact = event.target,
             origin = contact.nextElementSibling || contact.previousElementSibling;
 
         this.dragging = {card: this.#nearestVCard(contact), contact, didMove: false, origin};
@@ -62,17 +62,17 @@ export default class CardBoard {
         contact.classList.add('dragging');
     }
 
-    #handleDragEnd(event: DragEvent) {
+    #handleDragEnd(event: TargettedDragEvent) {
         if (this.dragging?.origin && !this.dragging.didMove) {
             this.dragging.origin.before(this.dragging.contact);
         }
 
-        (<HTMLElement>event.target).classList.remove('dragging');
+        event.target.classList.remove('dragging');
 
         this.dragging = null;
     }
 
-    #handleDragEnter(event: DragEvent & { target: HTMLElement }) {
+    #handleDragEnter(event: TargettedDragEvent) {
         assertIsDefined(this.dragging);
 
         const card = this.#nearestVCard(event.target);
@@ -89,7 +89,7 @@ export default class CardBoard {
         ui.element('.contacts', card.column).append(this.dragging.contact);
     }
 
-    #handleDragOver(event: DragEvent & { target: HTMLElement }) {
+    #handleDragOver(event: TargettedDragEvent) {
         event.preventDefault();
         assertIsDefined(this.dragging);
 
@@ -152,7 +152,7 @@ export default class CardBoard {
     }
 
     #nearestVCard(element: HTMLElement|null): VCard {
-        if (element && !element?.classList.contains('vcard')) {
+        if (element && !element.classList.contains('vcard')) {
             element = element.closest('.vcard');
         }
 
