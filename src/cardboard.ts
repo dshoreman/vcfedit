@@ -28,8 +28,10 @@ export default class CardBoard {
         ui.element('input.upload', clone).onchange = (ev) => this.loadVCardFile(ev);
         ui.element('.contacts', clone).addEventListener('dragstart', ev => this.#handleDragStart(ev));
         ui.element('.contacts', clone).addEventListener('dragend', ev => this.#handleDragEnd(ev));
-        ui.element('.vcard', clone).addEventListener('dragenter', ev => this.#handleDragEnter(ev));
-        ui.element('.vcard', clone).addEventListener('dragover', ev => ev.preventDefault(), false);
+        ui.element('.vcard', clone).addEventListener('dragenter', ev =>
+            this.#handleDragEnter(ev as DragEvent & {target: HTMLElement}));
+        ui.element('.vcard', clone).addEventListener('dragover', ev =>
+            this.#handleDragOver(ev as DragEvent & {target: HTMLElement}));
         ui.element('.vcard', clone).addEventListener('drop', ev => this.#handleDrop(ev));
         ui.element('.vcard', clone).id = id;
 
@@ -70,23 +72,43 @@ export default class CardBoard {
         this.dragging = null;
     }
 
-    #handleDragEnter(event: DragEvent) {
+    #handleDragEnter(event: DragEvent & { target: HTMLElement }) {
         assertIsDefined(this.dragging);
 
-        const d = this.dragging.contact,
-            t: HTMLElement|null = (<HTMLElement>event.target).closest('.contact'),
-            card = this.#nearestVCard(event.target as HTMLElement);
+        const card = this.#nearestVCard(event.target);
 
-        if (card && !t && card !== this.dragging.card) {
-            const closest = ui.closest('.contact', event, card.column);
-
-            closest ? closest.after(d) : ui.element('.contacts', card.column).append(d);
-        }
-        if (!t || t.offsetTop === d.offsetTop) {
+        if (event.target.closest('.contact') || card === this.dragging.card) {
             return;
         }
 
-        t.offsetTop > d.offsetTop ? t.before(d) : t.after(d);
+        const closest = ui.closest('.contact', event, card.column);
+        if (closest) {
+            return closest.after(this.dragging.contact);
+        }
+
+        ui.element('.contacts', card.column).append(this.dragging.contact);
+    }
+
+    #handleDragOver(event: DragEvent & { target: HTMLElement }) {
+        event.preventDefault();
+        assertIsDefined(this.dragging);
+
+        const contact: HTMLElement | null = event.target.closest('.contact'),
+            dragging = this.dragging.contact;
+
+        if (null === contact || contact.id === dragging.id) {
+            return;
+        }
+
+        const contactRect = contact.getBoundingClientRect(),
+            contactCenterY = contactRect.top + contactRect.height / 2,
+            draggedContact = this.dragging.contact;
+
+        if (event.y < contactCenterY) {
+            return contact.before(draggedContact);
+        }
+
+        contact.after(draggedContact);
     }
 
     #handleDrop(event: DragEvent) {
