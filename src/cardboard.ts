@@ -76,31 +76,23 @@ export default class CardBoard {
     }
 
     #handleDragOver(event: TargettedDragEvent) {
-        event.preventDefault();
         assertIsDefined(this.dragging);
+        event.preventDefault();
 
         const card = <HTMLElement>event.target.closest('.vcard'),
-            contact: HTMLElement | null =
-                event.target.closest('.contact') || ui.closest('.contact', event, card),
-            dragging = this.dragging.contact;
+            [first, closest] = ui.closest('.contact', event, card),
+            draggedContact = this.dragging.contact;
 
-        if (!contact) {
-            return ui.element('.contacts', card).append(dragging);
-        }
-
-        if (contact.id === dragging.id) {
+        if (closest?.id === draggedContact.id) {
             return;
         }
 
-        const contactRect = contact.getBoundingClientRect(),
-            contactCenterY = contactRect.top + contactRect.height / 2,
-            draggedContact = this.dragging.contact;
-
-        if (event.y < contactCenterY) {
-            return contact.before(draggedContact);
+        switch(first) {
+            case 'cursor': return closest.before(draggedContact);
+            case 'element': return closest.after(draggedContact);
+            default:
+                return ui.element('.contacts', card).append(draggedContact);
         }
-
-        contact.after(draggedContact);
     }
 
     #handleDrop(event: DragEvent) {
