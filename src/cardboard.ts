@@ -30,7 +30,6 @@ export default class CardBoard {
         ui.element('input.upload', clone).onchange = (ev) => this.loadVCardFile(ev);
         ui.element('.contacts', clone).addEventListener('dragstart', e => this.#handleDragStart(<TargettedDragEvent>e));
         ui.element('.contacts', clone).addEventListener('dragend', e => this.#handleDragEnd(<TargettedDragEvent>e));
-        ui.element('.vcard', clone).addEventListener('dragenter', e => this.#handleDragEnter(<TargettedDragEvent>e));
         ui.element('.vcard', clone).addEventListener('dragover', e => this.#handleDragOver(<TargettedDragEvent>e));
         ui.element('.vcard', clone).addEventListener('drop', ev => this.#handleDrop(ev));
         ui.element('.vcard', clone).id = id;
@@ -72,31 +71,20 @@ export default class CardBoard {
         this.dragging = null;
     }
 
-    #handleDragEnter(event: TargettedDragEvent) {
-        assertIsDefined(this.dragging);
-
-        const card = this.#nearestVCard(event.target);
-
-        if (event.target.closest('.contact') || card === this.dragging.card) {
-            return;
-        }
-
-        const closest = ui.closest('.contact', event, card.column);
-        if (closest) {
-            return closest.after(this.dragging.contact);
-        }
-
-        ui.element('.contacts', card.column).append(this.dragging.contact);
-    }
-
     #handleDragOver(event: TargettedDragEvent) {
         event.preventDefault();
         assertIsDefined(this.dragging);
 
-        const contact: HTMLElement | null = event.target.closest('.contact'),
+        const card = <HTMLElement>event.target.closest('.vcard'),
+            contact: HTMLElement | null =
+                event.target.closest('.contact') || ui.closest('.contact', event, card),
             dragging = this.dragging.contact;
 
-        if (null === contact || contact.id === dragging.id) {
+        if (!contact) {
+            return ui.element('.contacts', card).append(dragging);
+        }
+
+        if (contact.id === dragging.id) {
             return;
         }
 
