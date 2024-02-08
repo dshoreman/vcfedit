@@ -10,10 +10,12 @@ ui.element('#extracard').onclick = () => {
 };
 
 ui.element('#new-file-form').onsubmit = (ev) => {
-    const input = <HTMLInputElement & {parentNode: HTMLElement}>
-        ui.element('input[type=text]', (<HTMLElement>ev.target));
-    let filename = input.value;
+    const input = ui.element(
+        'input[type=text]',
+        ev.target as HTMLElement,
+    ) as any as HTMLInputElement;
 
+    let filename = input.value;
     if (!filename.endsWith('.vcf')) {
         filename += '.vcf';
     }

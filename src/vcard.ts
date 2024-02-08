@@ -11,7 +11,7 @@ export default class VCard {
 
     constructor(id: string, filename?: string) {
         this.id = id;
-        this.column = <HTMLDivElement>ui.element(`#${id}`);
+        this.column = ui.element(`#${id}`) as any as HTMLDivElement;
 
         this.#setHeader(filename);
     }

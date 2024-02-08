@@ -1,3 +1,7 @@
+type ElementWithListener = HTMLElement & {
+    listen(event: string, listener: EventListener): ElementWithListener
+};
+
 export function applyValues(tpl: string, values: {[key: string]: string}) {
     const clone = template(`#${tpl}`).content.cloneNode(true) as HTMLElement,
         container = element(':first-child', clone).className;
@@ -28,8 +32,14 @@ export function closest(selector: string, {clientX, clientY}: MouseEvent, parent
     return closest;
 }
 
-export const element = (selector: string, parent: Document|HTMLElement = document):
-    HTMLElement => findOrFail(selector, parent);
+export function element(selector: string, parent: Document|HTMLElement = document): ElementWithListener {
+    const el: ElementWithListener = findOrFail(selector, parent);
+
+    el.listen = (event: string, listener: EventListener) =>
+        listen(el, event, listener);
+
+    return el;
+}
 
 function findOrFail(selector: string, parent: Document|HTMLElement): any {
     const el = parent.querySelector(selector);
@@ -52,6 +62,16 @@ export function icon(name: string): HTMLElement {
 
 export const image = (selector: string, parent: Document|HTMLElement = document):
     HTMLImageElement => findOrFail(selector, parent);
+
+function listen <T extends ElementWithListener> (
+    element: T,
+    event: string,
+    listener: EventListener,
+): T {
+    element.addEventListener(event, listener);
+
+    return element;
+}
 
 export const template = (selector: string):
     HTMLTemplateElement => findOrFail(selector, document);

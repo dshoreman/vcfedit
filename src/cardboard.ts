@@ -24,16 +24,20 @@ export default class CardBoard {
         const clone = this.template.cloneNode(true) as HTMLElement,
             id = 'vcard-' + Date.now().toString().slice(-7);
 
-        this.cardCount += 1;
         ui.element('button.close', clone).onclick = () => this.removeCardColumn(id);
         ui.element('button.save', clone).onclick = () => this.downloadCard(id);
         ui.element('input.upload', clone).onchange = (ev) => this.loadVCardFile(ev);
-        ui.element('.contacts', clone).addEventListener('dragstart', e => this.#handleDragStart(<TargettedDragEvent>e));
-        ui.element('.contacts', clone).addEventListener('dragend', e => this.#handleDragEnd(<TargettedDragEvent>e));
-        ui.element('.vcard', clone).addEventListener('dragover', e => this.#handleDragOver(<TargettedDragEvent>e));
-        ui.element('.vcard', clone).addEventListener('drop', ev => this.#handleDrop(ev));
-        ui.element('.vcard', clone).id = id;
 
+        ui.element('.contacts', clone)
+            .listen('dragstart', ev => this.#handleDragStart(<TargettedDragEvent> ev))
+            .listen('dragend', ev => this.#handleDragEnd(<TargettedDragEvent> ev));
+
+        ui.element('.vcard', clone)
+            .listen('dragover', ev => this.#handleDragOver(<TargettedDragEvent> ev))
+            .listen('drop', ev => this.#handleDrop(<TargettedDragEvent> ev))
+            .id = id;
+
+        this.cardCount += 1;
         this.cardBoard.style.columnCount = this.cardCount.toString();
         this.cardBoard.append(clone);
 
