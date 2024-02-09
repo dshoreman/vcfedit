@@ -30,15 +30,22 @@ export function closest(
         return [first, closest];
     }
 
-    let closestDistance = Infinity;
-    (parent || document).querySelectorAll(selector).forEach(element => {
-        const [first, distance] = directionAndDistanceTo(element as HTMLElement, clientY);
+    let shortestDistance = Infinity;
+    for (const el of (parent || document).querySelectorAll(selector) as NodeListOf<HTMLElement>) {
+        const list = el.parentElement as HTMLElement,
+            tooHigh = list.offsetTop > el.offsetTop + el.offsetHeight - list.scrollTop,
+            tooLow = list.offsetHeight < el.offsetTop - list.offsetTop - list.scrollTop;
 
-        if (distance < closestDistance) {
-            closestDistance = distance;
-            closest = [first, element as HTMLElement];
-        }
-    });
+        if (tooHigh) continue;
+        if (tooLow) break;
+
+        const [first, distance] = directionAndDistanceTo(el, clientY);
+        if (shortestDistance < distance)
+            continue;
+
+        closest = [first, el];
+        shortestDistance = distance;
+    }
 
     return closest || [null, null];
 }
