@@ -4,6 +4,7 @@ import * as ui from "./ui.js";
 
 export default class Contact {
     id: string;
+    isVisible: boolean = false;
     rawData: string;
     properties: VCardProperty[];
     hasInvalidLines: boolean = false;

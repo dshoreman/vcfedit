@@ -8,10 +8,15 @@ export default class VCard {
     column: HTMLDivElement;
     id: string;
     filename: string | undefined;
+    #observer: IntersectionObserver;
+    #visibleContacts: object & {[id: string]: HTMLElement} = {};
 
     constructor(id: string, filename?: string) {
         this.id = id;
         this.column = ui.element(`#${id}`) as any as HTMLDivElement;
+        this.#observer = new IntersectionObserver(entries => this.#changeContactVisibility(entries), {
+            root: ui.element('.contacts', this.column),
+        });
 
         this.#setHeader(filename);
     }
@@ -28,7 +33,19 @@ export default class VCard {
             ui.element('.remove', contactCard).onclick = (e) => this.#removeContact(contact, e);
 
             ui.element('.contacts', this.column).append(contactCard);
+
             this.contacts[contact.id] = contact;
+            this.#observer.observe(ui.element(`#${contact.id}`));
+        }
+    }
+
+    #changeContactVisibility(entries: IntersectionObserverEntry[]) {
+        for (const entry of entries) {
+            if (entry.isIntersecting) {
+                this.#visibleContacts[entry.target.id] = ui.element(`#${entry.target.id}`);
+            } else if (entry.target.id in this.#visibleContacts) {
+                delete this.#visibleContacts[entry.target.id];
+            }
         }
     }
 
@@ -50,6 +67,10 @@ export default class VCard {
         Object.values(this.contacts).forEach(c => cards.push(c.export()));
 
         return cards.join('\r\n');
+    }
+
+    findClosestContact(event: MouseEvent & {target: HTMLElement}) {
+        return ui.closest('.contact', event, Object.values(this.#visibleContacts))
     }
 
     refreshContact(contact: Contact) {

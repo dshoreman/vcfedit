@@ -20,7 +20,7 @@ export function applyValues(tpl: string, values: {[key: string]: string}) {
 export function closest(
     selector: string,
     {clientY, target}: MouseEvent & HTMLTarget,
-    parent?: Element
+    haystack: HTMLElement[] = [],
 ): ['cursor'|'element', HTMLElement] | [null, null] {
     let closest: CursorRelativeElement|HTMLElement|null = <HTMLElement | null> target.closest(selector);
 
@@ -31,14 +31,7 @@ export function closest(
     }
 
     let shortestDistance = Infinity;
-    for (const el of (parent || document).querySelectorAll(selector) as NodeListOf<HTMLElement>) {
-        const list = el.parentElement as HTMLElement,
-            tooHigh = list.offsetTop > el.offsetTop + el.offsetHeight - list.scrollTop,
-            tooLow = list.offsetHeight < el.offsetTop - list.offsetTop - list.scrollTop;
-
-        if (tooHigh) continue;
-        if (tooLow) break;
-
+    for (const el of haystack) {
         const [first, distance] = directionAndDistanceTo(el, clientY);
         if (shortestDistance < distance)
             continue;

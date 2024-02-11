@@ -93,8 +93,8 @@ export default class CardBoard {
         assertIsDefined(this.dragging);
         event.preventDefault();
 
-        const card = <HTMLElement>event.target.closest('.vcard'),
-            [first, closest] = ui.closest('.contact', event, card),
+        const card = this.#nearestVCard(event.target),
+            [first, closest] = card.findClosestContact(event),
             draggedContact = this.dragging.contact;
 
         if (closest?.id === draggedContact.id) {
@@ -105,7 +105,7 @@ export default class CardBoard {
             case 'cursor': return closest.before(draggedContact);
             case 'element': return closest.after(draggedContact);
             default:
-                return ui.element('.contacts', card).append(draggedContact);
+                return ui.element('.contacts', card.column).append(draggedContact);
         }
     }
 
