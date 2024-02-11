@@ -9,9 +9,10 @@ function assertIsDefined<T>(value: T): asserts value is NonNullable<T> {
     }
 }
 
-type DragData = {card: VCard, contact: HTMLElement, didMove: boolean, origin: ChildNode|null};
+type ContactOrigin = ['after' | 'before', ChildNode] | ['solo', HTMLElement];
+type DragData = {card: VCard, contact: HTMLElement, didMove: boolean, origin: ContactOrigin};
 
-type TargettedDragEvent = DragEvent & {target: HTMLElement};
+type TargettedDragEvent = DragEvent & {target: HTMLElement & {parentElement: HTMLElement}};
 
 export default class CardBoard {
     cardBoard = ui.element('#vcards');
@@ -56,18 +57,31 @@ export default class CardBoard {
         card.download();
     }
 
-    #handleDragStart(event: TargettedDragEvent) {
-        const contact = event.target,
-            origin = contact.nextElementSibling || contact.previousElementSibling;
+    #findDragOrigin(contact: HTMLElement & {parentElement: HTMLElement}): ContactOrigin {
+        if (contact.previousElementSibling) {
+            return ['after', contact.previousElementSibling];
+        }
 
-        this.dragging = {card: this.#nearestVCard(contact), contact, didMove: false, origin};
+        if (contact.nextElementSibling) {
+            return ['before', contact.nextElementSibling];
+        }
+
+        return ['solo', contact.parentElement];
+    }
+
+    #handleDragStart(event: TargettedDragEvent) {
+        const contact = event.target, card = this.#nearestVCard(contact);
+
+        this.dragging = {card, contact, didMove: false, origin: this.#findDragOrigin(contact)};
 
         contact.classList.add('dragging');
     }
 
     #handleDragEnd(event: TargettedDragEvent) {
-        if (this.dragging?.origin && !this.dragging.didMove) {
-            this.dragging.origin.before(this.dragging.contact);
+        assertIsDefined(this.dragging);
+
+        if (!this.dragging.didMove) {
+            this.#resetContactPosition();
         }
 
         event.target.classList.remove('dragging');
@@ -157,6 +171,21 @@ export default class CardBoard {
         card.column.remove();
 
         delete this.vCards[vCardID];
+    }
+
+    #resetContactPosition() {
+        if (!this.dragging) {
+            throw new Error("Nothing to reset!");
+        }
+
+        const {contact} = this.dragging,
+            [position, origin] = this.dragging.origin;
+
+        if (position === 'solo') {
+            return origin.append(contact);
+        }
+
+        origin[position](contact);
     }
 
     loadVCardFile(event: Event) {
