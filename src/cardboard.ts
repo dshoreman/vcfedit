@@ -144,9 +144,8 @@ export default class CardBoard {
             return;
         }
 
-        newCard.contacts[contact.id] = contact;
-
-        delete oldCard.contacts[contact.id];
+        newCard.addContact(contact);
+        oldCard.removeContact(contact);
     }
 
     #nearestVCard(element: HTMLElement|null): VCard {
@@ -168,8 +167,7 @@ export default class CardBoard {
             throw new Error(`Card '${vCardID}' not found.`);
         }
 
-        card.column.remove();
-
+        card.tearDown();
         delete this.vCards[vCardID];
     }
 

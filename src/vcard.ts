@@ -21,6 +21,11 @@ export default class VCard {
         this.#setHeader(filename);
     }
 
+    addContact(contact: Contact) {
+        this.contacts[contact.id] = contact;
+        this.#observer.observe(ui.element(`#${contact.id}`));
+    }
+
     process(filename: string, vcfData: string) {
         this.#setHeader(filename);
 
@@ -30,12 +35,10 @@ export default class VCard {
 
             ui.element('.contact-header', contactCard).onclick = (e) => this.#toggleContactDetails(e);
             ui.element('.save', contactCard).onclick = (e) => contact.download(e);
-            ui.element('.remove', contactCard).onclick = (e) => this.#removeContact(contact, e);
+            ui.element('.remove', contactCard).onclick = (e) => this.#removeContactItem(contact, e);
 
             ui.element('.contacts', this.column).append(contactCard);
-
-            this.contacts[contact.id] = contact;
-            this.#observer.observe(ui.element(`#${contact.id}`));
+            this.addContact(contact);
         }
     }
 
@@ -79,12 +82,17 @@ export default class VCard {
         ui.element(`#${contact.id}`, this.column).replaceWith(contact.vCard());
     }
 
-    #removeContact(contact: Contact, event: Event) {
+    removeContact(contact: Contact) {
+        this.#observer.unobserve(ui.element(`#${contact.id}`));
+
+        delete this.contacts[contact.id];
+    }
+    #removeContactItem(contact: Contact, event: Event) {
         event.stopPropagation();
 
         ui.element(`#${contact.id}`, this.column).remove();
 
-        delete this.contacts[contact.id];
+        this.removeContact(contact);
     }
 
     #toggleContactDetails(event: Event) {
@@ -117,6 +125,11 @@ export default class VCard {
         }
 
         ui.element('h2', this.column).innerText = this.filename || 'Loading...';
+    }
+
+    tearDown() {
+        this.#observer.disconnect();
+        this.column.remove();
     }
 
     // Split continuous lines on CRLF followed by space or tab.
