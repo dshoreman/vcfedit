@@ -20,7 +20,7 @@ export function applyValues(tpl: string, values: {[key: string]: string}) {
 export function closest(
     selector: string,
     {clientY, target}: MouseEvent & HTMLTarget,
-    haystack: IntersectionObserverEntry[] = [],
+    haystack: HTMLElement[] = [],
 ): ['cursor'|'element', HTMLElement] | [null, null] {
     let closest: CursorRelativeElement|HTMLElement|null = <HTMLElement | null> target.closest(selector);
 
@@ -31,12 +31,12 @@ export function closest(
     }
 
     let shortestDistance = Infinity;
-    for (const entry of haystack) {
-        const [first, distance] = directionAndDistanceTo(entry, clientY);
+    for (const target of haystack) {
+        const [first, distance] = directionAndDistanceTo(target, clientY);
         if (shortestDistance < distance)
             continue;
 
-        closest = [first, entry.target as HTMLElement];
+        closest = [first, target];
         shortestDistance = distance;
     }
 
@@ -45,11 +45,8 @@ export function closest(
 
 // Returns a tuple with which comes first between 'cursor'/'element',
 // and the distance between `y` and the vertical center of `target`.
-function directionAndDistanceTo(
-    target: HTMLElement|IntersectionObserverEntry,
-    y: number
-): ['cursor'|'element', number] {
-    const rect = getRect(target),
+function directionAndDistanceTo(target: HTMLElement, y: number): ['cursor'|'element', number] {
+    const rect = target.getBoundingClientRect(),
         centerY = rect.top + rect.height / 2,
         distance = Math.abs(y - centerY);
 
@@ -77,14 +74,6 @@ function findOrFail(selector: string, parent: Document|HTMLElement): any {
     }
 
     return el
-}
-
-function getRect(target: HTMLElement|IntersectionObserverEntry): DOMRect {
-    if (target instanceof IntersectionObserverEntry) {
-        return target.boundingClientRect;
-    }
-
-    return target.getBoundingClientRect();
 }
 
 export function icon(name: string): HTMLElement {
