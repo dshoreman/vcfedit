@@ -9,7 +9,7 @@ export default class VCard {
     id: string;
     filename: string | undefined;
     #observer: IntersectionObserver;
-    #visibleContacts: object & {[id: string]: HTMLElement} = {};
+    #visibleContacts: object & {[id: string]: IntersectionObserverEntry} = {};
 
     constructor(id: string, filename?: string) {
         this.id = id;
@@ -45,7 +45,7 @@ export default class VCard {
     #changeContactVisibility(entries: IntersectionObserverEntry[]) {
         for (const entry of entries) {
             if (entry.isIntersecting) {
-                this.#visibleContacts[entry.target.id] = ui.element(`#${entry.target.id}`);
+                this.#visibleContacts[entry.target.id] = entry;
             } else if (entry.target.id in this.#visibleContacts) {
                 delete this.#visibleContacts[entry.target.id];
             }
