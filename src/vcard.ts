@@ -8,12 +8,22 @@ export default class VCard {
     column: HTMLDivElement;
     id: string;
     filename: string | undefined;
+    #observer: IntersectionObserver;
+    #visibleContacts: object & {[id: string]: HTMLElement} = {};
 
     constructor(id: string, filename?: string) {
         this.id = id;
-        this.column = <HTMLDivElement>ui.element(`#${id}`);
+        this.column = ui.element(`#${id}`) as any as HTMLDivElement;
+        this.#observer = new IntersectionObserver(entries => this.#changeContactVisibility(entries), {
+            root: ui.element('.contacts', this.column),
+        });
 
         this.#setHeader(filename);
+    }
+
+    addContact(contact: Contact) {
+        this.contacts[contact.id] = contact;
+        this.#observer.observe(ui.element(`#${contact.id}`));
     }
 
     process(filename: string, vcfData: string) {
@@ -25,10 +35,20 @@ export default class VCard {
 
             ui.element('.contact-header', contactCard).onclick = (e) => this.#toggleContactDetails(e);
             ui.element('.save', contactCard).onclick = (e) => contact.download(e);
-            ui.element('.remove', contactCard).onclick = (e) => this.#removeContact(contact, e);
+            ui.element('.remove', contactCard).onclick = (e) => this.#removeContactItem(contact, e);
 
             ui.element('.contacts', this.column).append(contactCard);
-            this.contacts[contact.id] = contact;
+            this.addContact(contact);
+        }
+    }
+
+    #changeContactVisibility(entries: IntersectionObserverEntry[]) {
+        for (const entry of entries) {
+            if (entry.isIntersecting) {
+                this.#visibleContacts[entry.target.id] = entry.target as HTMLElement;
+            } else if (entry.target.id in this.#visibleContacts) {
+                delete this.#visibleContacts[entry.target.id];
+            }
         }
     }
 
@@ -52,18 +72,27 @@ export default class VCard {
         return cards.join('\r\n');
     }
 
+    findClosestContact(event: MouseEvent & {target: HTMLElement}) {
+        return ui.closest('.contact', event, Object.values(this.#visibleContacts))
+    }
+
     refreshContact(contact: Contact) {
         this.contacts[contact.id] = contact;
 
         ui.element(`#${contact.id}`, this.column).replaceWith(contact.vCard());
     }
 
-    #removeContact(contact: Contact, event: Event) {
+    removeContact(contact: Contact) {
+        this.#observer.unobserve(ui.element(`#${contact.id}`));
+
+        delete this.contacts[contact.id];
+    }
+    #removeContactItem(contact: Contact, event: Event) {
         event.stopPropagation();
 
         ui.element(`#${contact.id}`, this.column).remove();
 
-        delete this.contacts[contact.id];
+        this.removeContact(contact);
     }
 
     #toggleContactDetails(event: Event) {
@@ -96,6 +125,11 @@ export default class VCard {
         }
 
         ui.element('h2', this.column).innerText = this.filename || 'Loading...';
+    }
+
+    tearDown() {
+        this.#observer.disconnect();
+        this.column.remove();
     }
 
     // Split continuous lines on CRLF followed by space or tab.

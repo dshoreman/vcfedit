@@ -90,10 +90,10 @@ h1 {
 }
 ul.contacts {
     background-color: #f5efe9;
-    height: calc(100% - 50px);
+    height: calc(100% - 40px);
     margin: 0;
     overflow: auto;
-    padding: 0.5rem;
+    padding: 3px;
 }
 ul.contacts::-webkit-scrollbar {
     width: 0;
@@ -105,21 +105,9 @@ li.contact {
     color: #18282b;
     color: #677d76;
     list-style: none;
-    margin: 0 0 1vw;
+    margin: 0 0 3px;
     overflow: auto;
     padding: 0;
-}
-li.contact.hovering {
-    margin: 4vh 0 1vh;
-}
-li.contact.hovering::before {
-    content: '☞';
-    color: #3a4f4d;
-    font-size: 2rem;
-    font-weight: bold;
-    position: absolute;
-    margin-left: -0.9rem;
-    margin-top: -2.5rem;
 }
 .contact-header {
     background-color: #3a4f4d;

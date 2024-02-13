@@ -11,7 +11,7 @@ export default class MergeWindow {
 
     constructor(oldVCard: VCard, oldContact: Contact, newVCard: VCard, newContact: Contact) {
         this.contacts = {left: oldContact.clone(), right: newContact.clone()};
-        this.dialog = <HTMLDialogElement>ui.element('#merge');
+        this.dialog = ui.element('#merge') as any as HTMLDialogElement;
         this.newVCard = newVCard;
         this.oldVCard = oldVCard;
     }

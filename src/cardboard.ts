@@ -3,11 +3,21 @@ import MergeWindow from "./merge.js";
 import * as ui from "./ui.js";
 import VCard from "./vcard.js";
 
+function assertIsDefined<T>(value: T): asserts value is NonNullable<T> {
+    if (value === undefined || value === null) {
+        throw new Error(`Expected value to be set, but got '${value}'.`);
+    }
+}
+
+type ContactOrigin = ['after' | 'before', ChildNode] | ['solo', HTMLElement];
+type DragData = {card: VCard, contact: HTMLElement, didMove: boolean, origin: ContactOrigin};
+
+type TargettedDragEvent = DragEvent & {target: HTMLElement & {parentElement: HTMLElement}};
+
 export default class CardBoard {
     cardBoard = ui.element('#vcards');
     cardCount = 0;
-    dragging: HTMLElement|null = null;
-    lastHovered: HTMLElement|null = null;
+    dragging: DragData|null = null;
     template = ui.template('#vcard-column').content;
     vCards: {[key: string]: VCard} = {};
 
@@ -15,16 +25,20 @@ export default class CardBoard {
         const clone = this.template.cloneNode(true) as HTMLElement,
             id = 'vcard-' + Date.now().toString().slice(-7);
 
-        this.cardCount += 1;
         ui.element('button.close', clone).onclick = () => this.removeCardColumn(id);
         ui.element('button.save', clone).onclick = () => this.downloadCard(id);
         ui.element('input.upload', clone).onchange = (ev) => this.loadVCardFile(ev);
-        ui.element('.contacts', clone).addEventListener('dragstart', ev => this.#handleDragStart(ev));
-        ui.element('.contacts', clone).addEventListener('dragend', ev => this.#handleDragEnd(ev));
-        ui.element('.vcard', clone).addEventListener('dragover', ev => this.#handleDragOver(ev), false);
-        ui.element('.vcard', clone).addEventListener('drop', ev => this.#handleDrop(ev));
-        ui.element('.vcard', clone).id = id;
 
+        ui.element('.contacts', clone)
+            .listen('dragstart', ev => this.#handleDragStart(<TargettedDragEvent> ev))
+            .listen('dragend', ev => this.#handleDragEnd(<TargettedDragEvent> ev));
+
+        ui.element('.vcard', clone)
+            .listen('dragover', ev => this.#handleDragOver(<TargettedDragEvent> ev))
+            .listen('drop', ev => this.#handleDrop(<TargettedDragEvent> ev))
+            .id = id;
+
+        this.cardCount += 1;
         this.cardBoard.style.columnCount = this.cardCount.toString();
         this.cardBoard.append(clone);
 
@@ -43,90 +57,99 @@ export default class CardBoard {
         card.download();
     }
 
-    #handleDragStart(event: DragEvent) {
-        const target = <HTMLElement>event.target;
+    #findDragOrigin(contact: HTMLElement & {parentElement: HTMLElement}): ContactOrigin {
+        if (contact.previousElementSibling) {
+            return ['after', contact.previousElementSibling];
+        }
 
-        this.dragging = target;
+        if (contact.nextElementSibling) {
+            return ['before', contact.nextElementSibling];
+        }
 
-        target.classList.add('dragging');
+        return ['solo', contact.parentElement];
     }
 
-    #handleDragEnd(event: DragEvent) {
-        (<HTMLElement>event.target).classList.remove('dragging');
+    #handleDragStart(event: TargettedDragEvent) {
+        const contact = event.target, card = this.#nearestVCard(contact);
 
-        this.#resetHover();
+        this.dragging = {card, contact, didMove: false, origin: this.#findDragOrigin(contact)};
+
+        contact.classList.add('dragging');
+    }
+
+    #handleDragEnd(event: TargettedDragEvent) {
+        assertIsDefined(this.dragging);
+
+        if (!this.dragging.didMove) {
+            this.#resetContactPosition();
+        }
+
+        event.target.classList.remove('dragging');
+
         this.dragging = null;
     }
 
-    #handleDragOver(event: DragEvent) {
-        const hovering = document.elementFromPoint(event.clientX, event.clientY),
-            contact = <HTMLElement|null>hovering?.closest('.contact');
-
+    #handleDragOver(event: TargettedDragEvent) {
+        assertIsDefined(this.dragging);
         event.preventDefault();
 
-        if (contact) {
-            this.#resetHover();
-            this.lastHovered = contact;
-        }
-        if (!contact || !this.dragging || [
-            contact.id,
-            contact.previousElementSibling?.id,
-        ].includes(this.dragging.id)) {
+        const card = this.#nearestVCard(event.target),
+            [first, closest] = card.findClosestContact(event),
+            draggedContact = this.dragging.contact;
+
+        if (closest?.id === draggedContact.id) {
             return;
         }
 
-        contact.classList.add('hovering');
-        contact.style.marginTop = `calc(${this.dragging.offsetHeight}px + 2vh)`;
+        switch(first) {
+            case 'cursor': return closest.before(draggedContact);
+            case 'element': return closest.after(draggedContact);
+            default:
+                return ui.element('.contacts', card.column).append(draggedContact);
+        }
     }
 
     #handleDrop(event: DragEvent) {
-        const sourceNode = <HTMLElement>this.dragging,
-            sourceVCard = this.#nearestVCard(sourceNode),
-            targetVCard = this.#nearestVCard(event.target as HTMLElement),
-            contactBelow = document.elementFromPoint(event.clientX, event.clientY)?.closest('.contact'),
-            nextContact = document.elementFromPoint(
-                event.clientX,
-                event.clientY + sourceNode.offsetHeight
-            )?.closest('.contact');
+        assertIsDefined(this.dragging);
 
-        if (contactBelow && contactBelow.id !== sourceNode.id) {
-            this.#mergeContacts(sourceVCard, targetVCard, contactBelow)
-        } else if (nextContact?.id !== sourceNode.id) {
-            this.#moveContact(sourceVCard, targetVCard, nextContact);
+        const target: HTMLElement = <HTMLElement>event.target,
+            [oldCard, newCard] = [this.dragging.card, this.#nearestVCard(target)],
+            contact = target.closest('.contact');
+
+        if (!contact || contact === this.dragging.contact) {
+            return this.#moveContact(oldCard, newCard);
         }
 
-        sourceNode.classList.remove('dragging');
+        this.#mergeContacts(oldCard, newCard, contact);
     }
 
     #mergeContacts(oldCard: VCard, newCard: VCard, mergeInto: Element) {
+        assertIsDefined(this.dragging);
+
         const merge = new MergeWindow(
-            oldCard, <Contact>oldCard.contacts[(<HTMLElement>this.dragging).id],
+            oldCard, <Contact>oldCard.contacts[(this.dragging.contact).id],
             newCard, <Contact>newCard.contacts[mergeInto.id],
         );
 
         merge.show();
     }
 
-    #moveContact(oldCard: VCard, newCard: VCard, beforeContact?: Element|null) {
-        const contactCard = <HTMLElement>this.dragging,
-            contacts = ui.element('.contacts', newCard.column);
+    #moveContact(oldCard: VCard, newCard: VCard) {
+        assertIsDefined(this.dragging);
+        this.dragging.didMove = true;
 
-        newCard.contacts[contactCard.id] = <Contact>oldCard.contacts[contactCard.id],
+        const contact = oldCard.contacts[this.dragging.contact.id];
 
-        ui.element('.contacts', oldCard.column).removeChild(contactCard);
-        if (beforeContact) {
-            contacts.insertBefore(contactCard, beforeContact);
-        } else {
-            contacts.prepend(contactCard);
+        if (!contact || oldCard.id === newCard.id) {
+            return;
         }
 
-        if (oldCard.id !== newCard.id) {
-            delete oldCard.contacts[contactCard.id];
-        }
+        newCard.addContact(contact);
+        oldCard.removeContact(contact);
     }
 
     #nearestVCard(element: HTMLElement|null): VCard {
-        if (element && !element?.classList.contains('vcard')) {
+        if (element && !element.classList.contains('vcard')) {
             element = element.closest('.vcard');
         }
 
@@ -137,15 +160,6 @@ export default class CardBoard {
         return <VCard>this.vCards[element.id];
     }
 
-    #resetHover() {
-        const wasHovering = <HTMLElement|null>document.querySelector('.hovering');
-
-        if (wasHovering) {
-            wasHovering.style.marginTop = '1vh';
-            wasHovering.classList.remove('hovering');
-        }
-    }
-
     removeCardColumn(vCardID: string) {
         const card = this.vCards[vCardID];
 
@@ -153,9 +167,23 @@ export default class CardBoard {
             throw new Error(`Card '${vCardID}' not found.`);
         }
 
-        card.column.remove();
-
+        card.tearDown();
         delete this.vCards[vCardID];
+    }
+
+    #resetContactPosition() {
+        if (!this.dragging) {
+            throw new Error("Nothing to reset!");
+        }
+
+        const {contact} = this.dragging,
+            [position, origin] = this.dragging.origin;
+
+        if (position === 'solo') {
+            return origin.append(contact);
+        }
+
+        origin[position](contact);
     }
 
     loadVCardFile(event: Event) {
