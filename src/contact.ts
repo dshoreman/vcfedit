@@ -69,6 +69,9 @@ export default class Contact {
         return data.join('\r\n');
     }
 
+    hasProperty = (property: Property) =>
+        this.properties.some(p => p.name === property);
+
     lastPropertyIndex(search: Property|number): number|void {
         let index = this.properties.length;
 

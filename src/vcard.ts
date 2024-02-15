@@ -1,5 +1,5 @@
 import Contact from "./contact.js";
-import {VCardProperty} from "./vcards/properties.js";
+import {Property, VCardProperty} from "./vcards/properties.js";
 import * as ui from "./ui.js"
 
 export default class VCard {
@@ -74,6 +74,22 @@ export default class VCard {
 
     findClosestContact(event: MouseEvent & {target: HTMLElement}) {
         return ui.closest('.contact', event, Object.values(this.#visibleContacts))
+    }
+
+    formatPhoneNumbers() {
+        for (const contact of Object.values(this.contacts)) {
+            if (!contact.hasProperty(Property.phone))
+                continue;
+
+            for (const prop of contact.properties) {
+                if (Property.phone !== prop.name)
+                    continue;
+
+                prop.value.formatted = prop.value.formatted.replace(/[^+#*\d]/g, '')
+            }
+
+            this.refreshContact(contact);
+        }
     }
 
     refreshContact(contact: Contact) {

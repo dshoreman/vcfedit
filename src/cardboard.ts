@@ -27,6 +27,7 @@ export default class CardBoard {
 
         ui.element('button.close', clone).onclick = () => this.removeCardColumn(id);
         ui.element('button.save', clone).onclick = () => this.downloadCard(id);
+        ui.element('button.format', clone).onclick = () => this.formatCard(id);
         ui.element('input.upload', clone).onchange = (ev) => this.loadVCardFile(ev);
 
         ui.element('.contacts', clone)
@@ -55,6 +56,16 @@ export default class CardBoard {
         }
 
         card.download();
+    }
+
+    formatCard(cardID: string) {
+        const card = this.vCards[cardID];
+
+        if (!card) {
+            throw new Error("Card '${cardID}' no longer exists.");
+        }
+
+        card.formatPhoneNumbers();
     }
 
     #findDragOrigin(contact: HTMLElement & {parentElement: HTMLElement}): ContactOrigin {

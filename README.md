@@ -20,7 +20,7 @@ Run `npx http-server` in the source dir and head to localhost:8080.
 * [ ] **Tools:**
   * [x] Export and download VCF file
     * [ ] Format as latest/custom version of vCard format
-  * [ ] Format phone numbers
+  * [x] Format phone numbers
   * [ ] Sort contacts by name
 
 ### Contacts
